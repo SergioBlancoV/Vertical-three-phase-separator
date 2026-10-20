@@ -1,0 +1,1319 @@
+<title>Vertical Three-Phase Separator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;450;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: drafting table — fixed input rail at left, the scaled vertical vessel with its height stack as the hero of the right workspace. */
+:root{
+  --paper:#EBEEE9; --panel:#F8FAF7; --panel2:#E1E7E0; --ink:#16252A; --ink2:#4C5E63;
+  --rule:#C2CAC3; --rule2:#D9E0D8;
+  --gas:#5B86A6; --oil:#8A5A14; --water:#2A7A6A;
+  --gasF:#C9DCE8; --oilF:#E6D2AC; --waterF:#BFDFD6;
+  --ok:#2F6B4F; --warn:#9A7609; --alert:#9C3A20;
+  --okBg:#DFEDE4; --warnBg:#F6EDCF; --alertBg:#F6DFD8;
+  --steel:#8A9499;
+  --disp:"IBM Plex Sans Condensed",-apple-system,"Segoe UI",sans-serif;
+  --body:"IBM Plex Sans",-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#111A1D; --panel:#192327; --panel2:#223036; --ink:#E6EDE9; --ink2:#9CACAC;
+  --rule:#33444A; --rule2:#283840;
+  --gas:#86B4D2; --oil:#D9A45A; --water:#54C0A6;
+  --gasF:#23414F; --oilF:#4A3A18; --waterF:#1E4A43;
+  --ok:#62BD8E; --warn:#D7B343; --alert:#DD7A57;
+  --okBg:#1B3429; --warnBg:#352D12; --alertBg:#3A231B;
+  --steel:#6E7D84; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --paper:#111A1D; --panel:#192327; --panel2:#223036; --ink:#E6EDE9; --ink2:#9CACAC;
+  --rule:#33444A; --rule2:#283840;
+  --gas:#86B4D2; --oil:#D9A45A; --water:#54C0A6;
+  --gasF:#23414F; --oilF:#4A3A18; --waterF:#1E4A43;
+  --ok:#62BD8E; --warn:#D7B343; --alert:#DD7A57;
+  --okBg:#1B3429; --warnBg:#352D12; --alertBg:#3A231B;
+  --steel:#6E7D84; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:var(--disp);margin:0;text-wrap:balance}
+#bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px 20px;
+  border-bottom:1px solid var(--rule);background:var(--panel);position:sticky;top:env(safe-area-inset-top,0px);z-index:40}
+#bar h1{font-size:17px;font-weight:700;letter-spacing:.01em}
+#bar .sub{font-size:12px;color:var(--ink2)}
+#bar .sp{flex:1}
+.byline{display:flex;align-items:baseline;gap:9px;font-size:12.5px;font-weight:500}
+.byline a{color:var(--ink2);text-decoration:none;border-bottom:1px solid var(--rule)}
+.byline a:hover{color:var(--ink);border-bottom-color:var(--ink)}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:3px;overflow:hidden}
+.seg button{font-family:var(--disp);font-size:12px;font-weight:600;letter-spacing:.04em;
+  border:0;background:transparent;color:var(--ink2);padding:5px 11px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+.seg button+button{border-left:1px solid var(--rule)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--gas);outline-offset:1px}
+#wrap{display:grid;grid-template-columns:330px minmax(0,1fr);align-items:start}
+#wrap.full{grid-template-columns:minmax(0,1fr)}
+#rail{border-right:1px solid var(--rule);background:var(--panel);padding-bottom:50px}
+#work{padding:0 20px 60px;min-width:0}
+fieldset{border:0;margin:0;padding:14px 18px;border-bottom:1px solid var(--rule2)}
+legend{font-family:var(--disp);font-size:11.5px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink2);padding:0 0 8px}
+.f{display:grid;grid-template-columns:1fr 92px;gap:8px;align-items:center;margin-bottom:6px}
+.f.u{grid-template-columns:1fr 70px 62px}
+.f label{font-size:12.5px;color:var(--ink2);line-height:1.3}
+input,select{font-family:var(--mono);font-size:12.5px;width:100%;padding:4px 6px;
+  border:1px solid var(--rule);border-radius:2px;background:var(--paper);color:var(--ink)}
+select{font-family:var(--body)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-family:var(--disp);font-size:12px;font-weight:600;padding:5px 10px;border-radius:3px;
+  border:1px solid var(--rule);background:transparent;color:var(--ink);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+#strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:1px;
+  background:var(--rule2);border:1px solid var(--rule2);border-top:0;margin:0 -20px 20px}
+#strip>div{background:var(--panel);padding:12px 16px}
+#strip .k{font-family:var(--disp);font-size:10.5px;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink2);margin-bottom:3px}
+#strip .v{font-family:var(--mono);font-size:19px;font-weight:600;letter-spacing:-.01em}
+#strip .n{font-size:11.5px;color:var(--ink2);margin-top:2px;line-height:1.35}
+#strip .sour{background:var(--warnBg)}
+#strip .sour .v{color:var(--warn)}
+section{margin:26px 0 0}
+section>h2{font-size:14.5px;font-weight:700;letter-spacing:.02em;margin-bottom:3px}
+section>.note{font-size:12.5px;color:var(--ink2);max-width:72ch;margin:0 0 12px}
+.card{background:var(--panel);border:1px solid var(--rule2);border-radius:3px;padding:14px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+.hd{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.hd h3{font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink2)}
+.hd .sp{flex:1}
+svg{display:block;width:100%;height:auto;max-width:100%}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th{text-align:left;font-family:var(--disp);font-size:11px;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--ink2);padding:6px 10px 6px 0;border-bottom:1px solid var(--rule);white-space:nowrap}
+td{padding:6px 10px 6px 0;border-bottom:1px solid var(--rule2);vertical-align:top}
+td.n,th.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.gov td{background:var(--warnBg)}
+.scroll{overflow-x:auto}
+.tag{display:inline-block;font-size:11px;font-family:var(--disp);font-weight:600;letter-spacing:.03em;
+  padding:2px 7px;border-radius:2px;background:var(--okBg);color:var(--ok);white-space:nowrap}
+.tag.w{background:var(--warnBg);color:var(--warn)}
+.tag.a{background:var(--alertBg);color:var(--alert)}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:7px;vertical-align:baseline}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--ink2)}
+.legend span{display:inline-flex;align-items:center}
+ul.msgs{margin:0;padding:0;list-style:none}
+ul.msgs li{padding:8px 0 8px 16px;border-top:1px solid var(--rule2);font-size:12.5px;position:relative}
+ul.msgs li:first-child{border-top:0}
+ul.msgs li::before{content:"";position:absolute;left:0;top:15px;width:8px;height:2px;border-radius:1px;background:var(--ink2)}
+ul.msgs li.a::before{background:var(--alert)} ul.msgs li.w::before{background:var(--warn)} ul.msgs li.k::before{background:var(--ok)}
+.srcnote{font-size:12px;color:var(--ink2);background:var(--panel);border-left:2px solid var(--warn);
+  padding:10px 14px;margin:0 0 14px;max-width:76ch;border-radius:0 3px 3px 0}
+pre#rep{font-family:var(--mono);font-size:11.5px;line-height:1.6;white-space:pre-wrap;
+  background:var(--panel);border:1px solid var(--rule2);border-radius:3px;padding:14px;max-height:360px;overflow:auto;margin:0}
+.btn{font-family:var(--disp);font-size:12px;font-weight:600;letter-spacing:.03em;
+  border:1px solid var(--ink);background:transparent;color:var(--ink);padding:6px 13px;border-radius:3px;cursor:pointer}
+.btn:hover{background:var(--ink);color:var(--panel)}
+footer{border-top:1px solid var(--rule);margin-top:34px;padding:18px 0 0;font-size:12px;color:var(--ink2);max-width:80ch}
+footer .au{display:block;margin-top:10px;color:var(--ink)}
+footer a{color:var(--ink2)}
+@media (max-width:900px){
+  #wrap{grid-template-columns:1fr}
+  #rail{border-right:0;border-bottom:1px solid var(--rule)}
+  .two{grid-template-columns:1fr}
+  #work{padding:0 16px 60px}
+  #strip{margin:0 -16px 20px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div id="bar">
+  <h1 id="ttl">Separador vertical trifásico</h1>
+  <span class="sub" id="sub">Simulador de diseño y selección de materiales</span>
+  <span class="sp"></span>
+  <span class="byline">Sergio Blanco, PhD
+    <a href="https://www.linkedin.com/in/sergio-blanco-professor/" target="_blank" rel="noopener">LinkedIn</a></span>
+  <span class="seg" role="group" id="tabs">
+    <button id="tab-sim" aria-pressed="true">Simulador</button><button id="tab-ref" aria-pressed="false">Definiciones</button></span>
+  <span class="seg" role="group" aria-label="Language">
+    <button id="lang-es" aria-pressed="true">ES</button><button id="lang-en" aria-pressed="false">EN</button></span>
+</div>
+<div id="wrap"><div id="rail"></div><div id="work"><div id="strip"></div><div id="out"></div></div></div>
+
+<script>
+"use strict";
+/* ============================================================ i18n */
+const I18N={
+es:{
+ ttl:"Separador vertical trifásico", sub:"Simulador de diseño y selección de materiales",
+ tabSim:"Simulador", tabRef:"Definiciones y normas",
+ scen:"Caso de operación", caseA:"Entrada de gas", caseB:"Crudo pesado", caseC:"Libre",
+ scenNote:{A:"Separador de entrada de gas de alta presión con poco líquido y H₂S elevado.",
+           B:"Separador de producción de crudo pesado con alto corte de agua.",
+           C:"Condiciones editadas por el usuario."},
+ gFlows:"Caudales", oil:"Aceite", water:"Agua", gas:"Gas",
+ gCond:"Condiciones", pOp:"Presión de operación (bar a)", tOp:"Temperatura de operación (°C)",
+ pDes:"Presión de diseño (bar g)", tDes:"Temperatura de diseño (°C)",
+ gProp:"Propiedades de los fluidos", rhoO:"Densidad del aceite (kg/m³)", rhoW:"Densidad del agua (kg/m³)",
+ mwG:"Masa molar del gas (g/mol)", zG:"Factor de compresibilidad Z",
+ muO:"Viscosidad del aceite (cP)", muW:"Viscosidad del agua (cP)", muG:"Viscosidad del gas (cP)",
+ gChem:"Química del fluido", co2:"CO₂ en fase gas (% molar)", h2s:"H₂S en fase gas (% molar)",
+ cl:"Cloruros (mg/l)", ph:"pH del agua", sand:"Arena (lb por 1000 bbl)",
+ gDia:"Criterios de diámetro", dmG:"Gota a retirar del gas (µm)",
+ dmW:"Gota de agua en aceite (µm)", dmO:"Gota de aceite en agua (µm)",
+ kSB:"Factor K de Souders-Brown (m/s)",
+ gHt:"Presupuesto de altura", tO:"Retención de aceite (min)", tW:"Retención de agua (min)",
+ h1:"Fondo a nivel bajo de agua (m)", hf:"Nivel alto a boquilla de entrada (m)",
+ hdMin:"Desprendimiento mínimo hasta la malla (m)", hm:"Espesor del extractor de niebla (m)",
+ htMin:"Altura libre mínima sobre la malla (m)",
+ ldMin:"Esbeltez H/D mínima", ldMax:"Esbeltez H/D máxima",
+ gMech:"Diseño mecánico", zj:"Coeficiente de unión soldada z", life:"Vida de diseño (años)",
+ addT:"Tolerancia de fabricación (mm)", caMax:"Sobreespesor máximo admitido (mm)",
+ head:"Tipo de fondo", hEll:"Elipsoidal 2:1", hTori:"Toriesférico 10 %",
+ vcorMode:"Velocidad de corrosión", vcorBare:"Modelo indicativo, sin mitigación",
+ vcorMit:"Con mitigación química", vcorMan:"Valor del cliente",
+ vcor:"Velocidad de corrosión (mm/año)", vInh:"Velocidad inhibida de diseño (mm/año)",
+ avail:"Disponibilidad de la mitigación (%)",
+ gExt:"Ambiente externo", envK:"Ambiente", envMar:"Marino", envTrop:"Tropical húmedo no marino",
+ envInd:"Industrial", insul:"Con aislamiento térmico",
+ sClass:"Clasificación del servicio", sSour:"Servicio amargo", sSweet:"Servicio dulce", sNoW:"Sin agua libre",
+ sReg:"Región SSC", regLab:["Región 0","Región 1","Región 2","Región 3"],
+ regRoute:"Ruta de selección admitida", regMap:"Mapa de regiones de severidad",
+ regMapNote:"Presión parcial de H₂S frente al pH in situ. El punto blanco es la condición de operación actual.",
+ regAx:"Presión parcial de H₂S (kPa)", regAy:"pH in situ",
+ regBeyond:"Por encima de 1 MPa de pH₂S la figura no aplica: la norma señala incertidumbre fuera de ese límite.",
+ regHard:"Dureza máxima típica", regSmys:"SMYS máximo típico", regNone:"Sin restricción por este documento",
+ sGovD:"Criterio que fija el diámetro", sSize:"Recipiente", sHD:"Esbeltez H/D", sThk:"Espesor de envolvente",
+ govGas:"Velocidad de gas", govWO:"Agua en aceite", govOW:"Aceite en agua",
+ pco2:"pCO₂", ph2s:"pH₂S",
+ secDraw:"Disposición del equipo",
+ drawNote:"Dibujo a escala del punto de diseño. Cambia cualquier condición de operación y la geometría se recalcula.",
+ vFluid:"Fluidos", vMat:"Materiales",
+ secDia:"Los tres criterios de diámetro",
+ diaNote:"En un vertical el diámetro no se negocia con la longitud: lo fija la más exigente de tres condiciones de velocidad independientes. La barra resaltada es la que manda.",
+ diaAx:"Diámetro requerido (m)",
+ cGas:"Gas: la gota debe caer contra el gas que sube",
+ cWO:"Agua en aceite: la gota debe bajar contra el aceite que sube",
+ cOW:"Aceite en agua: la gota debe subir contra el agua que baja",
+ secHt:"Presupuesto de altura",
+ htNote:"La altura no se calcula, se apila. Cada tramo responde a una causa distinta, y el gráfico muestra cuál domina.",
+ htAx:"Altura entre tangentes (m)",
+ segH1:"Fondo a nivel bajo", segHw:"Retención de agua", segHo:"Retención de aceite",
+ segHf:"Nivel alto a entrada", segHd:"Desprendimiento", segHm:"Extractor de niebla", segHt:"Libre superior",
+ secProc:"Resultados de proceso", secMech:"Diseño mecánico de la envolvente",
+ secCorr:"Evaluación de corrosión", secMat:"Selección de materiales por zona",
+ secLim:"Límites configurables", secRep:"Informe",
+ param:"Parámetro", value:"Valor", unit:"Unidad", note:"Observación",
+ crit:"Criterio", reqD:"Diámetro requerido", vel:"Velocidad admisible", area:"Área requerida",
+ zone:"Zona", medium:"Medio", mech:"Mecanismos dominantes", matSel:"Material propuesto", basis:"Base de la decisión",
+ pQgAct:"Caudal de gas en condiciones de operación", pRhoG:"Densidad del gas",
+ pVt:"Velocidad terminal de la gota de líquido", pVsb:"Velocidad de Souders-Brown",
+ pVgAdm:"Velocidad de gas admisible adoptada", pVgReal:"Velocidad real del gas",
+ pVwo:"Velocidad de decantación del agua en el aceite", pVow:"Velocidad de ascenso del aceite en el agua",
+ pVoUp:"Velocidad ascendente del aceite", pVwDn:"Velocidad descendente del agua",
+ pD:"Diámetro interior", pA:"Área transversal", pH:"Altura entre tangentes", pHD:"Esbeltez H/D",
+ pVol:"Volumen del recipiente", pMass:"Masa aproximada de la envolvente",
+ mF:"Tensión nominal de diseño f", mE:"Espesor de cálculo", mCA:"Sobreespesor por corrosión",
+ mAdd:"Tolerancia de fabricación", mNom:"Espesor nominal adoptado", mHead:"Espesor de los fondos",
+ mRp:"Límite elástico a temperatura de diseño", mRm:"Resistencia a tracción a 20 °C",
+ cBare:"Velocidad sin mitigación", cRate:"Velocidad de corrosión estimada",
+ cLoss:"Pérdida proyectada a la vida de diseño", cVerdict:"Veredicto",
+ cOkCA:"Cabe en el sobreespesor", cNoCA:"Excede el sobreespesor admitido",
+ genRep:"Generar informe", copy:"Copiar", copied:"Copiado",
+ foot:"Esta herramienta implementa la lógica del dimensionamiento de proceso, del cálculo de espesor por presión interna y del cribado de materiales. No cubre el análisis estructural del faldón ni las cargas de viento y sismo. No reproduce el texto de ninguna norma: los límites numéricos se cargan como configuración y deben verificarse contra la edición vigente antes de usarse en un entregable.",
+ limNote:"Valores de partida de práctica común. Verifícalos y ajústalos contra la edición vigente de cada documento antes de usar la herramienta en un trabajo real.",
+ corrNote:"El modelo de velocidad de corrosión es indicativo. En un proyecto real el modelo se acuerda con el usuario final; usa la opción «valor del cliente» para introducir el resultado acordado.",
+ matNote:"El cribado propone un material por zona a partir de los mecanismos activos. La decisión final exige verificación contra la norma de material y, en servicio amargo, su calificación.",
+ ptr:"Puntero", std:"Norma", covers:"Qué cubre", usedIn:"Dónde lo usa la herramienta",
+ term:"Término", defn:"Definición", refs:"Referencia",
+ refTtl:"Definiciones y normas de referencia",
+ refNote:"Glosario de los conceptos que usa el simulador, con la cláusula o el documento del que proviene cada uno. Las definiciones están redactadas aquí; ninguna reproduce el texto de la norma.",
+ refWarn:"Los valores numéricos de este glosario son los que la herramienta trae precargados. Verifícalos contra la edición vigente antes de apoyarte en ellos para un entregable.",
+ gGrpV:"El separador vertical", gSour:"Servicio amargo y regiones de severidad", gMech2:"Mecanismos de daño",
+ gProc:"Dimensionamiento de proceso", gDes:"Diseño mecánico", gMat:"Materiales y protección",
+ stdTtl:"Normas relacionadas"
+},
+en:{
+ ttl:"Vertical three-phase separator", sub:"Design and materials selection simulator",
+ tabSim:"Simulator", tabRef:"Definitions and standards",
+ scen:"Operating case", caseA:"Gas inlet", caseB:"Heavy crude", caseC:"Free",
+ scenNote:{A:"High-pressure gas inlet separator with little liquid and elevated H₂S.",
+           B:"Heavy crude production separator with a high water cut.",
+           C:"User-edited conditions."},
+ gFlows:"Flow rates", oil:"Oil", water:"Water", gas:"Gas",
+ gCond:"Conditions", pOp:"Operating pressure (bar a)", tOp:"Operating temperature (°C)",
+ pDes:"Design pressure (bar g)", tDes:"Design temperature (°C)",
+ gProp:"Fluid properties", rhoO:"Oil density (kg/m³)", rhoW:"Water density (kg/m³)",
+ mwG:"Gas molar mass (g/mol)", zG:"Compressibility factor Z",
+ muO:"Oil viscosity (cP)", muW:"Water viscosity (cP)", muG:"Gas viscosity (cP)",
+ gChem:"Fluid chemistry", co2:"CO₂ in gas phase (mol %)", h2s:"H₂S in gas phase (mol %)",
+ cl:"Chlorides (mg/l)", ph:"Water pH", sand:"Sand (lb per 1000 bbl)",
+ gDia:"Diameter criteria", dmG:"Droplet removed from gas (µm)",
+ dmW:"Water droplet in oil (µm)", dmO:"Oil droplet in water (µm)",
+ kSB:"Souders-Brown K factor (m/s)",
+ gHt:"Height budget", tO:"Oil retention time (min)", tW:"Water retention time (min)",
+ h1:"Bottom to low water level (m)", hf:"High level to feed nozzle (m)",
+ hdMin:"Minimum disengagement to the mesh (m)", hm:"Mist extractor thickness (m)",
+ htMin:"Minimum freeboard above the mesh (m)",
+ ldMin:"Minimum slenderness H/D", ldMax:"Maximum slenderness H/D",
+ gMech:"Mechanical design", zj:"Weld joint coefficient z", life:"Design life (years)",
+ addT:"Fabrication allowance (mm)", caMax:"Maximum corrosion allowance (mm)",
+ head:"Head type", hEll:"2:1 ellipsoidal", hTori:"10 % torispherical",
+ vcorMode:"Corrosion rate", vcorBare:"Indicative model, no mitigation",
+ vcorMit:"With chemical mitigation", vcorMan:"Client value",
+ vcor:"Corrosion rate (mm/year)", vInh:"Inhibited design rate (mm/year)",
+ avail:"Mitigation availability (%)",
+ gExt:"External environment", envK:"Environment", envMar:"Marine", envTrop:"Humid tropical, non-marine",
+ envInd:"Industrial", insul:"Thermally insulated",
+ sClass:"Service classification", sSour:"Sour service", sSweet:"Sweet service", sNoW:"No free water",
+ sReg:"SSC region", regLab:["Region 0","Region 1","Region 2","Region 3"],
+ regRoute:"Admitted selection route", regMap:"Map of severity regions",
+ regMapNote:"H₂S partial pressure against in situ pH. The white marker is the current operating condition.",
+ regAx:"H₂S partial pressure (kPa)", regAy:"In situ pH",
+ regBeyond:"Above 1 MPa of pH₂S the figure does not apply: the standard notes uncertainty beyond that limit.",
+ regHard:"Typical maximum hardness", regSmys:"Typical maximum SMYS", regNone:"No restriction from this document",
+ sGovD:"Criterion that sets the diameter", sSize:"Vessel", sHD:"Slenderness H/D", sThk:"Shell thickness",
+ govGas:"Gas velocity", govWO:"Water in oil", govOW:"Oil in water",
+ pco2:"pCO₂", ph2s:"pH₂S",
+ secDraw:"Equipment arrangement",
+ drawNote:"Scaled drawing of the design point. Change any operating condition and the geometry is recalculated.",
+ vFluid:"Fluids", vMat:"Materials",
+ secDia:"The three diameter criteria",
+ diaNote:"In a vertical vessel the diameter does not trade against length: it is set by the most demanding of three independent velocity conditions. The highlighted bar is the one that governs.",
+ diaAx:"Required diameter (m)",
+ cGas:"Gas: the droplet must fall against the rising gas",
+ cWO:"Water in oil: the droplet must descend against the rising oil",
+ cOW:"Oil in water: the droplet must rise against the descending water",
+ secHt:"Height budget",
+ htNote:"The height is not calculated, it is stacked. Each segment answers a different cause, and the chart shows which one dominates.",
+ htAx:"Tangent-to-tangent height (m)",
+ segH1:"Bottom to low level", segHw:"Water retention", segHo:"Oil retention",
+ segHf:"High level to inlet", segHd:"Disengagement", segHm:"Mist extractor", segHt:"Upper freeboard",
+ secProc:"Process results", secMech:"Mechanical design of the shell",
+ secCorr:"Corrosion evaluation", secMat:"Materials selection by zone",
+ secLim:"Configurable limits", secRep:"Report",
+ param:"Parameter", value:"Value", unit:"Unit", note:"Note",
+ crit:"Criterion", reqD:"Required diameter", vel:"Allowable velocity", area:"Required area",
+ zone:"Zone", medium:"Medium", mech:"Dominant mechanisms", matSel:"Proposed material", basis:"Basis for the decision",
+ pQgAct:"Gas flow at operating conditions", pRhoG:"Gas density",
+ pVt:"Terminal velocity of the liquid droplet", pVsb:"Souders-Brown velocity",
+ pVgAdm:"Adopted allowable gas velocity", pVgReal:"Actual gas velocity",
+ pVwo:"Settling velocity of water through oil", pVow:"Rise velocity of oil through water",
+ pVoUp:"Upward oil velocity", pVwDn:"Downward water velocity",
+ pD:"Inside diameter", pA:"Cross-sectional area", pH:"Tangent-to-tangent height", pHD:"Slenderness H/D",
+ pVol:"Vessel volume", pMass:"Approximate shell mass",
+ mF:"Nominal design stress f", mE:"Calculated thickness", mCA:"Corrosion allowance",
+ mAdd:"Fabrication allowance", mNom:"Adopted nominal thickness", mHead:"Head thickness",
+ mRp:"Yield strength at design temperature", mRm:"Tensile strength at 20 °C",
+ cBare:"Rate without mitigation", cRate:"Estimated corrosion rate",
+ cLoss:"Projected loss over the design life", cVerdict:"Verdict",
+ cOkCA:"Fits within the corrosion allowance", cNoCA:"Exceeds the allowed corrosion allowance",
+ genRep:"Generate report", copy:"Copy", copied:"Copied",
+ foot:"This tool implements the logic of process sizing, internal-pressure thickness calculation and materials screening. It does not cover the structural analysis of the skirt nor wind and seismic loads. It reproduces the text of no standard: the numerical limits are loaded as configuration and must be verified against the current edition before being used in a deliverable.",
+ limNote:"Starting values from common practice. Verify and adjust them against the current edition of each document before using the tool on real work.",
+ corrNote:"The corrosion rate model is indicative. On a real project the model is agreed with the end user; use the “client value” option to enter the agreed result.",
+ matNote:"The screening proposes one material per zone from the active mechanisms. The final decision requires verification against the material standard and, in sour service, its qualification.",
+ ptr:"Pointer", std:"Standard", covers:"What it covers", usedIn:"Where the tool uses it",
+ term:"Term", defn:"Definition", refs:"Reference",
+ refTtl:"Definitions and reference standards",
+ refNote:"Glossary of the concepts the simulator uses, with the clause or document each one comes from. The definitions are written here; none reproduces the text of a standard.",
+ refWarn:"The numerical values in this glossary are the ones the tool ships with. Verify them against the current edition before relying on them for a deliverable.",
+ gGrpV:"The vertical separator", gSour:"Sour service and severity regions", gMech2:"Damage mechanisms",
+ gProc:"Process sizing", gDes:"Mechanical design", gMat:"Materials and protection",
+ stdTtl:"Related standards"
+}};
+let LANG="es";
+const t=k=>I18N[LANG][k]??k;
+
+/* ============================================================ presets */
+const PRESETS={
+A:{qo:180,qoU:"m3d",qw:25,qwU:"m3d",qg:2200000,qgU:"sm3d",
+   pOp:75,tOp:55,pDes:95,tDes:85,rhoO:750,rhoW:1035,mwG:19,zG:0.86,muO:0.6,muW:0.5,muG:0.014,
+   co2:1.8,h2s:1.4,cl:28000,ph:3.9,sand:0,
+   dmG:150,dmW:500,dmO:200,kSB:0.08,
+   tO:3,tW:3,h1:0.3,hf:0.45,hdMin:0.9,hm:0.15,htMin:0.3,ldMin:2,ldMax:4,
+   zj:1,life:25,addT:1,caMax:6,head:"ell",vmode:"mitig",vInh:0.1,avail:90,vcor:0.3,env:"mar",insul:true},
+B:{qo:60,qoU:"m3d",qw:210,qwU:"m3d",qg:2000,qgU:"sm3d",
+   pOp:12,tOp:68,pDes:19,tDes:85,rhoO:946,rhoW:1010,mwG:23,zG:0.95,muO:35,muW:0.45,muG:0.012,
+   co2:3.1,h2s:0.15,cl:42000,ph:4.6,sand:12,
+   dmG:150,dmW:500,dmO:200,kSB:0.08,
+   tO:10,tW:10,h1:0.3,hf:0.45,hdMin:0.9,hm:0.15,htMin:0.3,ldMin:2,ldMax:4,
+   zj:1,life:20,addT:1,caMax:6,head:"ell",vmode:"mitig",vInh:0.1,avail:90,vcor:0.3,env:"trop",insul:false}
+};
+let S=Object.assign({},PRESETS.A), SCEN="A";
+
+/* ============================================================ configurable limits */
+const LIM={
+  t316:{v:40,lab:{es:"T máx. de 316 en agua con cloruros (°C)",en:"Max temperature of 316 in chloride water (°C)"},ptr:"ISO 21457 §6.6.2"},
+  t22:{v:70,lab:{es:"T máx. de dúplex 22Cr en agua con cloruros (°C)",en:"Max temperature of 22Cr duplex in chloride water (°C)"},ptr:"ISO 21457 §6.6.2"},
+  t25:{v:95,lab:{es:"T máx. de dúplex 25Cr en agua con cloruros (°C)",en:"Max temperature of 25Cr duplex in chloride water (°C)"},ptr:"ISO 21457 §6.6.2"},
+  clLow:{v:200,lab:{es:"Cloruros por debajo de los cuales 316 es admisible (mg/l)",en:"Chlorides below which 316 is acceptable (mg/l)"},ptr:"ISO 21457 §6.2.3"},
+  cuiLo:{v:-5,lab:{es:"Límite inferior del rango de CUI (°C)",en:"Lower bound of the CUI range (°C)"},ptr:"ISO 21457 §6.6.5"},
+  cuiHi:{v:175,lab:{es:"Límite superior del rango de CUI (°C)",en:"Upper bound of the CUI range (°C)"},ptr:"ISO 21457 §6.6.5"},
+  dStep:{v:0.05,lab:{es:"Incremento de redondeo del diámetro (m)",en:"Diameter rounding increment (m)"},ptr:"—"},
+  caStep:{v:1,lab:{es:"Incremento de chapa para redondeo (mm)",en:"Plate increment for rounding (mm)"},ptr:"EN 10028-1"}
+};
+
+/* ============================================================ materials */
+const MATS={
+ P265GH:{n:"P265GH",std:"EN 10028-2",Rp:265,Rm:410,ty:"fer",pren:null},
+ P355NL2:{n:"P355NL2",std:"EN 10028-3",Rp:355,Rm:490,ty:"fer",pren:null},
+ S316L:{n:"1.4404 (316L)",std:"EN 10028-7",Rp:220,Rm:520,ty:"aus",pren:25.5},
+ D22:{n:"1.4462 (22Cr)",std:"EN 10028-7",Rp:460,Rm:640,ty:"dup",pren:35.0},
+ D25:{n:"1.4410 (25Cr)",std:"EN 10028-7",Rp:530,Rm:730,ty:"dup",pren:42.5}
+};
+const DERATE={fer:[[20,1],[100,.93],[150,.87],[200,.82],[250,.76]],
+              aus:[[20,1],[100,.85],[150,.78],[200,.72],[250,.68]],
+              dup:[[20,1],[100,.88],[150,.83],[200,.79],[250,.75]]};
+function derate(ty,T){const a=DERATE[ty];if(T<=a[0][0])return 1;
+  for(let i=1;i<a.length;i++){if(T<=a[i][0]){const[x0,y0]=a[i-1],[x1,y1]=a[i];return y0+(y1-y0)*(T-x0)/(x1-x0);}}
+  return a[a.length-1][1];}
+function fNom(m,T){const k=derate(m.ty,T);
+  if(m.ty==="aus")return (m.Rp*k)/1.5;
+  return Math.min((m.Rp*k)/1.5,m.Rm/2.4);}
+
+/* ============================================================ physics */
+const G=9.81;
+function vTerm(dm,rhoL,rhoG,muG){
+  let v=Math.sqrt(4*G*dm*(rhoL-rhoG)/(3*0.44*rhoG));
+  for(let i=0;i<80;i++){
+    const Re=Math.max(rhoG*v*dm/muG,1e-9);
+    const Cd=24/Re*(1+0.15*Math.pow(Re,0.687))+0.42/(1+42500*Math.pow(Re,-1.16));
+    const vn=Math.sqrt(4*G*dm*(rhoL-rhoG)/(3*Cd*rhoG));
+    if(Math.abs(vn-v)<1e-10){v=vn;break;} v=0.5*(v+vn);
+  } return v;}
+const vStokes=(dm,dRho,mu)=>G*dm*dm*dRho/(18*mu);
+function deWaard(Tc,pco2,pH){
+  if(pco2<=0)return 0;
+  const TK=Tc+273.15;
+  let v=Math.pow(10,5.8-1710/TK+0.67*Math.log10(pco2));
+  const pHref=3.82+0.00384*Tc+0.5*Math.log10(pco2);
+  v*=Math.max(0.05,Math.min(Math.pow(10,0.32*(pHref-pH)),4));
+  if(Tc>80)v*=Math.max(0.1,1-(Tc-80)*0.02);
+  return v;}
+
+/* ---- SSC regions, ISO 15156-2 Figure 1 ----
+   Two parallel boundaries, slope 1 pH unit per decade of pH2S, offset by one
+   pH unit, both flattening at 100 kPa. Verified against Table B.2.          */
+const SSCLIM={p0:0.3,hi:6.5,lo:5.5,base:3.5,off:1.0,pMax:1000};
+const sscUpper=pk=>Math.min(SSCLIM.hi,SSCLIM.base+SSCLIM.off+Math.log10(Math.max(pk,1e-6)));
+const sscLower=pk=>Math.min(SSCLIM.lo,Math.max(SSCLIM.base,SSCLIM.base+Math.log10(Math.max(pk,1e-6))));
+function sscRegion(pk,pH){
+  if(!(pk>0)||pk<SSCLIM.p0)return {r:0,up:null,lo:null,beyond:false};
+  const up=sscUpper(pk),lo=sscLower(pk);
+  return {r:pH>=up?1:pH>=lo?2:3,up,lo,beyond:pk>SSCLIM.pMax};}
+const REGREQ={0:{route:"—",hrc:null,hv:null,smys:null},
+ 1:{route:"A.2 / A.3 / A.4",hrc:30,hv:300,smys:550},
+ 2:{route:"A.2 / A.3",hrc:27,hv:280,smys:450},
+ 3:{route:"A.2",hrc:22,hv:250,smys:null}};
+
+/* ============================================================ compute */
+const conv=(v,u)=>u==="bbld"?v*0.1589873:u==="mmscfd"?v*28316.85:v;
+function compute(){
+  const R=8.314;
+  const qo=conv(S.qo,S.qoU)/86400, qw=conv(S.qw,S.qwU)/86400;
+  const qgStd=conv(S.qg,S.qgU)/86400;
+  const P=S.pOp*1e5, T=S.tOp+273.15;
+  const rhoG=P*(S.mwG/1000)/(S.zG*R*T);
+  const qg=qgStd*(101325/P)*(T/288.15)*S.zG;
+  const muG=S.muG*1e-3, muO=S.muO*1e-3, muW=S.muW*1e-3;
+
+  /* --- three independent velocity criteria, each giving a minimum diameter --- */
+  const vt=vTerm(S.dmG*1e-6,S.rhoO,rhoG,muG);
+  const vSB=S.kSB*Math.sqrt(Math.max(S.rhoO-rhoG,1)/rhoG);
+  const vGas=Math.min(vt,vSB);
+  const Agas=qg/vGas, Dgas=Math.sqrt(4*Agas/Math.PI);
+  const vWO=vStokes(S.dmW*1e-6,Math.max(S.rhoW-S.rhoO,1),muO);
+  const Awo=qo/vWO, Dwo=Math.sqrt(4*Awo/Math.PI);
+  const vOW=vStokes(S.dmO*1e-6,Math.max(S.rhoW-S.rhoO,1),muW);
+  const Aow=qw/vOW, Dow=Math.sqrt(4*Aow/Math.PI);
+  const Dmin=Math.max(Dgas,Dwo,Dow);
+  const govD=Dgas>=Dwo&&Dgas>=Dow?"govGas":(Dwo>=Dow?"govWO":"govOW");
+  const D=Math.ceil(Dmin/LIM.dStep.v)*LIM.dStep.v;
+  const A=Math.PI/4*D*D;
+  const vgReal=qg/A, voUp=qo/A, vwDn=qw/A;
+
+  /* --- height stacked from its causes --- */
+  const hw=(qw*S.tW*60)/A, ho=(qo*S.tO*60)/A;
+  const hd=Math.max(S.hdMin,D), ht=Math.max(S.htMin,D/2);
+  const SEG=[["segH1",S.h1,"w"],["segHw",hw,"w"],["segHo",ho,"o"],
+             ["segHf",S.hf,"g"],["segHd",hd,"g"],["segHm",S.hm,"m"],["segHt",ht,"g"]];
+  const H=SEG.reduce((a,b)=>a+b[1],0);
+  const HD=H/D;
+
+  /* --- chemistry --- */
+  const pco2=S.pOp*S.co2/100, ph2s=S.pOp*S.h2s/100, ph2sk=ph2s*100;
+  const water=qw>0;
+  const SSC=water?sscRegion(ph2sk,S.ph):{r:0,up:null,lo:null,beyond:false};
+  const sour=water&&ph2sk>=SSCLIM.p0;
+  const vBare=water?deWaard(S.tOp,pco2,S.ph):0;
+  let vcor;
+  if(!water) vcor=0;
+  else if(S.vmode==="man") vcor=S.vcor;
+  else if(S.vmode==="mitig"){const Av=Math.min(Math.max(S.avail/100,0),1); vcor=Av*S.vInh+(1-Av)*vBare;}
+  else vcor=vBare;
+  const loss=vcor*S.life;
+  const CA=Math.min(Math.max(loss,1.5),S.caMax);
+  const caOver=loss>S.caMax;
+
+  /* --- mechanical, internal pressure only --- */
+  const shellMat=!sour?MATS.P265GH:(SSC.r===3?MATS.P265GH:MATS.P355NL2);
+  const f=fNom(shellMat,S.tDes), Pm=S.pDes/10;
+  const eCalc=(Pm*D*1000)/(2*f*S.zj-Pm);
+  const eNom=Math.ceil((eCalc+CA+S.addT)/LIM.caStep.v)*LIM.caStep.v;
+  const Rc=S.head==="ell"?0.8*D:1.0*D;
+  const eHead=Math.ceil(((Pm*Rc*1000)/(2*f*S.zj-0.5*Pm)+CA+S.addT)/LIM.caStep.v)*LIM.caStep.v;
+  const hdep=S.head==="ell"?D/4:D*0.1935;
+  const vol=A*H+2*(2/3*Math.PI*Math.pow(D/2,2)*hdep);
+  const mass=(Math.PI*(D+eNom/1000)*H*(eNom/1000)+2*1.08*D*D*(eHead/1000))*7850;
+
+  return {qo,qw,qg,rhoG,vt,vSB,vGas,Dgas,Dwo,Dow,Dmin,govD,D,A,vgReal,voUp,vwDn,vWO,vOW,
+    Agas,Awo,Aow,hw,ho,hd,ht,SEG,H,HD,hdep,
+    pco2,ph2s,ph2sk,SSC,sour,water,vBare,vcor,loss,CA,caOver,
+    shellMat,f,eCalc,eNom,eHead,vol,mass};
+}
+const f1=(x,d)=>(isFinite(x)?x:0).toFixed(d===undefined?2:d);
+
+/* ============================================================ screening */
+function screen(c){
+  const L=LANG, Z=[], RR=REGREQ[c.SSC.r];
+  const sourTxt=c.sour
+    ? (L==="es"?`${I18N.es.regLab[c.SSC.r]} de ISO 15156-2: ruta ${RR.route}, dureza máxima ${RR.hrc} HRC / ${RR.hv} HV`
+               :`ISO 15156-2 ${I18N.en.regLab[c.SSC.r]}: route ${RR.route}, maximum hardness ${RR.hrc} HRC / ${RR.hv} HV`)
+    : (L==="es"?"servicio dulce":"sweet service");
+  const clHi=S.cl>LIM.clLow.v, hot=S.tOp;
+  const cra=!clHi?"S316L":(hot<=LIM.t316.v?"S316L":hot<=LIM.t22.v?"D22":"D25");
+  const coatBottom=c.vcor>0.1||c.caOver;
+  Z.push({z:L==="es"?"Fondo superior y espacio de vapor":"Top head and vapour space",
+    m:L==="es"?"Gas húmedo con CO₂ y H₂S":"Wet gas with CO₂ and H₂S",
+    mech:L==="es"?"Condensación en el fondo superior, corrosión por CO₂/H₂S":"Condensation on the top head, CO₂/H₂S corrosion",
+    mat:c.shellMat.n+(c.sour?" + HIC/SOHIC":""),cls:c.sour?"csSour":"cs",
+    b:(L==="es"?"Chapa según ":"Plate to ")+c.shellMat.std+" · "+sourTxt,tag:c.sour?"w":"k"});
+  Z.push({z:L==="es"?"Extractor de niebla":"Mist extractor",m:L==="es"?"Gas húmedo condensante":"Condensing wet gas",
+    mech:L==="es"?"Picadura y agrietamiento por cloruros en malla delgada":"Chloride pitting and cracking in thin mesh",
+    mat:MATS[clHi?cra:"S316L"].n,cls:clHi?(cra==="D25"?"d25":cra==="D22"?"d22":"ss"):"ss",
+    b:L==="es"?"Alambre fino: cualquier pérdida de sección es pérdida de función":"Fine wire: any section loss is loss of function",tag:"w"});
+  Z.push({z:L==="es"?"Boquilla de entrada y deflector":"Feed nozzle and deflector",
+    m:L==="es"?"Mezcla a alta velocidad":"High-velocity mixture",
+    mech:(S.sand>0?(L==="es"?"Erosión por arena, ":"Sand erosion, "):"")+(L==="es"?"erosión-corrosión, impacto sobre el deflector":"erosion-corrosion, impingement on the deflector"),
+    mat:S.sand>0?MATS.D22.n:MATS.S316L.n,cls:S.sand>0?"d22":"ss",
+    b:S.sand>0?(L==="es"?"Producción de sólidos declarada; sin sobreespesor disponible en un elemento delgado":"Sand production declared; no allowance available on a thin element")
+              :(L==="es"?"Elemento delgado, sin sobreespesor disponible":"Thin element, no corrosion allowance available"),tag:S.sand>0?"a":"w"});
+  Z.push({z:L==="es"?"Envolvente, capa de aceite":"Shell, oil layer",m:L==="es"?"Aceite con agua dispersa":"Oil with dispersed water",
+    mech:L==="es"?"Película de aceite protectora; es la banda menos agresiva del recipiente":"Protective oil film; the least aggressive band of the vessel",
+    mat:c.shellMat.n,cls:"cs",
+    b:(L==="es"?"Sobreespesor de ":"Corrosion allowance of ")+f1(c.CA,1)+" mm",tag:"k"});
+  Z.push({z:L==="es"?"Interfaz y capa de agua":"Interface and water layer",
+    m:L==="es"?"Agua producida, "+S.cl.toLocaleString()+" mg/l Cl⁻":"Produced water, "+S.cl.toLocaleString()+" mg/l Cl⁻",
+    mech:L==="es"?"Inmersión permanente, picadura, MIC y depósitos en la banda de interfaz":"Permanent immersion, pitting, MIC and deposits in the interface band",
+    mat:coatBottom?(c.shellMat.n+(L==="es"?" + revestimiento interno":" + internal coating")):c.shellMat.n,
+    cls:coatBottom?"csCoat":"cs",
+    b:coatBottom?(L==="es"?"En un vertical esta banda es estrecha y fija: se revieste solo ese anillo en lugar de engrosar toda la envolvente":"In a vertical vessel this band is narrow and fixed: only that ring is lined instead of thickening the whole shell")
+                :(L==="es"?"Cubierto por el sobreespesor":"Covered by the corrosion allowance"),tag:coatBottom?"a":"w"});
+  Z.push({z:L==="es"?"Fondo inferior y rompevórtices":"Bottom head and vortex breaker",
+    m:L==="es"?"Agua con sólidos decantados":"Water with settled solids",
+    mech:L==="es"?"Velocidad casi nula, acumulación de arena y corrosión bajo depósito":"Almost nil velocity, sand accumulation and under-deposit corrosion",
+    mat:MATS[cra].n,cls:cra==="S316L"?"ss":cra==="D22"?"d22":"d25",
+    b:"PREN "+f1(MATS[cra].pren,1)+" · "+(L==="es"?"límite de temperatura configurado":"configured temperature limit")+": "+(cra==="S316L"?LIM.t316.v:cra==="D22"?LIM.t22.v:LIM.t25.v)+" °C",
+    tag:S.sand>0?"a":"w"});
+  const cui=S.insul&&S.tOp>LIM.cuiLo.v&&S.tOp<LIM.cuiHi.v;
+  Z.push({z:L==="es"?"Unión del faldón al fondo":"Skirt to head junction",
+    m:L==="es"?"Ambiente externo, rendija en la unión":"External environment, crevice at the junction",
+    mech:L==="es"?"Rendija entre faldón y fondo, acumulación de agua y corrosión por rendija; es el punto que primero se pierde en un vertical":"Crevice between skirt and head, water accumulation and crevice corrosion; it is the first point lost in a vertical vessel",
+    mat:(L==="es"?"Soldadura continua y sellado, sin rendijas":"Continuous weld and sealing, no crevices"),cls:"csSour",
+    b:L==="es"?"Exigir soldadura continua en ambas caras y drenaje del faldón en la especificación":"Require continuous welding on both faces and skirt drainage in the specification",tag:"a"});
+  Z.push({z:L==="es"?"Superficie externa":"External surface",
+    m:S.env==="mar"?(L==="es"?"Atmósfera marina":"Marine atmosphere"):S.env==="trop"?(L==="es"?"Tropical húmedo":"Humid tropical"):(L==="es"?"Industrial":"Industrial"),
+    mech:cui?(L==="es"?"Corrosión bajo aislamiento; en un vertical el agua escurre por toda la altura y se acumula en los anillos de soporte del aislamiento":"Corrosion under insulation; in a vertical vessel water runs down the full height and collects at the insulation support rings")
+            :(L==="es"?"Corrosión atmosférica":"Atmospheric corrosion"),
+    mat:(L==="es"?"Sistema de pintura ISO 12944":"ISO 12944 paint system")+" · "+(S.env==="mar"?"C5":S.env==="ind"?"C4":"C3"),cls:"coat",
+    b:cui?(L==="es"?"Los anillos de soporte del aislamiento son trampas de agua: sellos y drenajes forman parte de la especificación":"The insulation support rings are water traps: seals and drains are part of the specification")
+         :(L==="es"?"Durabilidad según la vida de diseño":"Durability per the design life"),tag:cui?"a":"k"});
+  return Z;
+}
+const MATCOL={cs:"#8A9499",csSour:"#6F7D86",csCoat:"#3F7F8C",ss:"#6E93B8",d22:"#3B6E8F",d25:"#23506B",coat:"#7E6A3C"};
+
+/* ============================================================ drawings */
+function elevation(c,mode){
+  const W=980,H=620,mt=46,mb=64;
+  const skirt=Math.max(0.8,c.D*0.5);
+  const tot=c.H+2*c.hdep+skirt;
+  const s=Math.min((H-mt-mb)/tot, 300/c.D);
+  const cx=250, Dw=c.D*s, hdp=c.hdep*s;
+  const yTop=mt+hdp, yBot=yTop+c.H*s;      /* tangent lines */
+  const xl=cx-Dw/2, xr=cx+Dw/2;
+  const o=[];
+  const esc=x=>String(x).replace(/[<>&]/g,m=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[m]));
+  /* elevations measured from the bottom tangent */
+  let e=0; const lev={};
+  c.SEG.forEach(([k,v])=>{ lev[k]=[e,e+v]; e+=v; });
+  const Y=h=>yBot-h*s;
+  const yWater=Y(lev.segHw[1]), yOil=Y(lev.segHo[1]);
+  const yFeed=Y(lev.segHf[1]), yMeshB=Y(lev.segHm[0]), yMeshT=Y(lev.segHm[1]);
+
+  o.push(`<defs><clipPath id="vz"><path d="M ${xl} ${yTop} A ${Dw/2} ${hdp} 0 0 1 ${xr} ${yTop} L ${xr} ${yBot} A ${Dw/2} ${hdp} 0 0 1 ${xl} ${yBot} Z"/></clipPath>
+  <pattern id="mesh" width="6" height="6" patternUnits="userSpaceOnUse"><path d="M0 0 L6 6 M6 0 L0 6" stroke="var(--ink2)" stroke-width=".7" fill="none"/></pattern>
+  <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0 0 L7 3 L0 6 z" fill="var(--ink2)"/></marker>
+  <marker id="arL" markerWidth="8" markerHeight="8" refX="0" refY="3" orient="auto"><path d="M7 0 L0 3 L7 6 z" fill="var(--ink2)"/></marker></defs>`);
+
+  if(mode==="fluid"){
+    o.push(`<g clip-path="url(#vz)">
+      <rect x="${xl-4}" y="${mt-4}" width="${Dw+8}" height="${yOil-mt+4}" fill="var(--gasF)"/>
+      <rect x="${xl-4}" y="${yOil}" width="${Dw+8}" height="${yWater-yOil}" fill="var(--oilF)"/>
+      <rect x="${xl-4}" y="${yWater}" width="${Dw+8}" height="${yBot+hdp-yWater+4}" fill="var(--waterF)"/></g>`);
+    o.push(`<line x1="${xl}" y1="${yOil}" x2="${xr}" y2="${yOil}" stroke="var(--oil)" stroke-width="1.5"/>`);
+    o.push(`<line x1="${xl}" y1="${yWater}" x2="${xr}" y2="${yWater}" stroke="var(--water)" stroke-width="1.5"/>`);
+    const lb=(y,txt,col)=>`<text x="${cx}" y="${y}" text-anchor="middle" font-size="11.5" font-family="var(--disp)" font-weight="600" fill="${col}" letter-spacing=".04em">${esc(txt)}</text>`;
+    o.push(lb((mt+yOil)/2,LANG==="es"?"GAS":"GAS","var(--gas)"));
+    if(yWater-yOil>14) o.push(lb((yOil+yWater)/2+4,LANG==="es"?"ACEITE":"OIL","var(--oil)"));
+    if(yBot-yWater>14) o.push(lb((yWater+yBot)/2+4,LANG==="es"?"AGUA":"WATER","var(--water)"));
+  }else{
+    const Z=screen(c);
+    o.push(`<g clip-path="url(#vz)" opacity=".45">
+      <rect x="${xl-4}" y="${mt-4}" width="${Dw+8}" height="${yOil-mt+4}" fill="${MATCOL[Z[0].cls]}"/>
+      <rect x="${xl-4}" y="${yOil}" width="${Dw+8}" height="${yWater-yOil}" fill="${MATCOL[Z[3].cls]}"/>
+      <rect x="${xl-4}" y="${yWater}" width="${Dw+8}" height="${yBot+hdp-yWater+4}" fill="${MATCOL[Z[4].cls]}"/></g>`);
+    const lb=(y,txt)=>`<text x="${cx}" y="${y}" text-anchor="middle" font-size="10.5" font-family="var(--mono)" fill="var(--ink)">${esc(txt)}</text>`;
+    o.push(lb((mt+yOil)/2,Z[0].mat));
+    if(yWater-yOil>14) o.push(lb((yOil+yWater)/2+4,Z[3].mat));
+    if(yBot-yWater>14) o.push(lb((yWater+yBot)/2+4,Z[4].mat));
+  }
+
+  /* shell outline with both heads */
+  o.push(`<path d="M ${xl} ${yTop} A ${Dw/2} ${hdp} 0 0 1 ${xr} ${yTop} L ${xr} ${yBot} A ${Dw/2} ${hdp} 0 0 1 ${xl} ${yBot} Z"
+    fill="none" stroke="var(--ink)" stroke-width="2.2"/>`);
+  o.push(`<line x1="${xl}" y1="${yTop}" x2="${xr}" y2="${yTop}" stroke="var(--rule)" stroke-width="1" stroke-dasharray="4 3"/>`);
+  o.push(`<line x1="${xl}" y1="${yBot}" x2="${xr}" y2="${yBot}" stroke="var(--rule)" stroke-width="1" stroke-dasharray="4 3"/>`);
+  /* skirt */
+  o.push(`<line x1="${xl+6}" y1="${yBot}" x2="${xl+6}" y2="${yBot+skirt*s}" stroke="var(--ink)" stroke-width="2"/>
+    <line x1="${xr-6}" y1="${yBot}" x2="${xr-6}" y2="${yBot+skirt*s}" stroke="var(--ink)" stroke-width="2"/>
+    <line x1="${xl-12}" y1="${yBot+skirt*s}" x2="${xr+12}" y2="${yBot+skirt*s}" stroke="var(--ink)" stroke-width="3"/>
+    <text x="${xl-18}" y="${yBot+skirt*s-6}" text-anchor="end" font-size="10" font-family="var(--mono)" fill="var(--ink2)">${LANG==="es"?"faldón":"skirt"}</text>`);
+  /* mist extractor */
+  o.push(`<rect x="${xl+3}" y="${yMeshT}" width="${Dw-6}" height="${Math.max(yMeshB-yMeshT,4)}" fill="url(#mesh)" stroke="var(--ink)" stroke-width="1.4"/>`);
+  /* nozzles */
+  o.push(`<rect x="${cx-9}" y="${mt-hdp-18}" width="18" height="${hdp+18}" fill="none" stroke="var(--ink)" stroke-width="2"/>
+    <rect x="${cx-14}" y="${mt-hdp-22}" width="28" height="5" fill="var(--ink)"/>
+    <text x="${cx}" y="${mt-hdp-28}" text-anchor="middle" font-size="10" font-family="var(--mono)" fill="var(--gas)">gas</text>`);
+  o.push(`<rect x="${xl-30}" y="${yFeed-7}" width="30" height="14" fill="none" stroke="var(--ink)" stroke-width="2"/>
+    <rect x="${xl-34}" y="${yFeed-12}" width="5" height="24" fill="var(--ink)"/>
+    <path d="M ${xl+5} ${yFeed-16} L ${xl+5} ${yFeed+16} L ${xl+13} ${yFeed+16} L ${xl+13} ${yFeed-16} Z" fill="var(--steel)" stroke="var(--ink)" stroke-width="1.2"/>
+    <text x="${xl-38}" y="${yFeed+4}" text-anchor="end" font-size="10" font-family="var(--mono)" fill="var(--ink2)">${LANG==="es"?"entrada":"inlet"}</text>`);
+  const yOilN=(yOil+yWater)/2;
+  o.push(`<rect x="${xr}" y="${yOilN-6}" width="28" height="12" fill="none" stroke="var(--ink)" stroke-width="2"/>
+    <rect x="${xr+27}" y="${yOilN-11}" width="5" height="22" fill="var(--ink)"/>
+    <text x="${xr+38}" y="${yOilN+4}" font-size="10" font-family="var(--mono)" fill="var(--oil)">${LANG==="es"?"aceite":"oil"}</text>`);
+  o.push(`<rect x="${cx-9}" y="${yBot+hdp}" width="18" height="16" fill="none" stroke="var(--ink)" stroke-width="2"/>
+    <rect x="${cx-14}" y="${yBot+hdp+15}" width="28" height="5" fill="var(--ink)"/>
+    <text x="${cx+22}" y="${yBot+hdp+16}" font-size="10" font-family="var(--mono)" fill="var(--water)">${LANG==="es"?"agua":"water"}</text>`);
+
+  /* segment stack to the right */
+  const xs=xr+132;   /* clear of the side oil nozzle and its label */
+  c.SEG.forEach(([k,v])=>{
+    const y0=Y(lev[k][0]), y1=Y(lev[k][1]);
+    if(y0-y1<1) return;
+    o.push(`<line x1="${xs}" y1="${y1}" x2="${xs}" y2="${y0}" stroke="var(--ink2)" stroke-width="1" marker-start="url(#arL)" marker-end="url(#ar)"/>
+      <line x1="${xr+4}" y1="${y1}" x2="${xs}" y2="${y1}" stroke="var(--rule)" stroke-width=".7"/>`);
+    if(y0-y1>13) o.push(`<text x="${xs+8}" y="${(y0+y1)/2+4}" font-size="10.5" font-family="var(--mono)" fill="var(--ink)">${f1(v)} m</text>
+      <text x="${xs+58}" y="${(y0+y1)/2+4}" font-size="10.5" font-family="var(--body)" fill="var(--ink2)">${esc(t(k))}</text>`);
+  });
+  /* total height on the left, diameter below */
+  const xh=xl-62;
+  o.push(`<line x1="${xh}" y1="${yTop}" x2="${xh}" y2="${yBot}" stroke="var(--ink2)" stroke-width="1" marker-start="url(#arL)" marker-end="url(#ar)"/>
+    <line x1="${xh-6}" y1="${yTop}" x2="${xl}" y2="${yTop}" stroke="var(--rule)" stroke-width=".8"/>
+    <line x1="${xh-6}" y1="${yBot}" x2="${xl}" y2="${yBot}" stroke="var(--rule)" stroke-width=".8"/>
+    <text x="${xh-8}" y="${(yTop+yBot)/2}" text-anchor="middle" font-size="12" font-family="var(--mono)" font-weight="500" fill="var(--ink)" transform="rotate(-90 ${xh-8} ${(yTop+yBot)/2})">H = ${f1(c.H)} m</text>`);
+  const yd=yBot+skirt*s+30;
+  o.push(`<line x1="${xl}" y1="${yd}" x2="${xr}" y2="${yd}" stroke="var(--ink2)" stroke-width="1" marker-start="url(#arL)" marker-end="url(#ar)"/>
+    <text x="${cx}" y="${yd+17}" text-anchor="middle" font-size="12" font-family="var(--mono)" font-weight="500" fill="var(--ink)">D = ${f1(c.D)} m &#183; H/D = ${f1(c.HD)}</text>`);
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${LANG==="es"?"Dibujo del separador vertical":"Drawing of the vertical separator"}">${o.join("")}</svg>`;
+}
+
+function diaBars(c){
+  const W=620,H=250,ml=16,mr=16,mt=26,mb=40;
+  const rows=[["cGas",c.Dgas,"govGas","var(--gas)"],["cWO",c.Dwo,"govWO","var(--oil)"],["cOW",c.Dow,"govOW","var(--water)"]];
+  const dmax=Math.max(c.Dgas,c.Dwo,c.Dow)*1.25;
+  const bw=W-ml-mr-150, bh=34, gap=24;
+  const o=[];
+  rows.forEach(([k,d,g,col],i)=>{
+    const y=mt+i*(bh+gap), w=Math.max(d/dmax*bw,2), on=c.govD===g;
+    o.push(`<rect x="${ml}" y="${y}" width="${w}" height="${bh}" fill="${col}" opacity="${on?1:.3}" rx="2"/>`);
+    const inside=w>78;   /* keep the value off the design-diameter line */
+    o.push(`<text x="${inside?ml+w-12:ml+w+10}" y="${y+bh/2+5}" text-anchor="${inside?"end":"start"}" font-size="13" font-family="var(--mono)" font-weight="${on?600:400}" fill="${inside?"var(--paper)":(on?"var(--ink)":"var(--ink2)")}">${f1(d)} m</text>`);
+    o.push(`<text x="${ml}" y="${y-7}" font-size="11" font-family="var(--body)" fill="var(--ink2)">${t(k)}</text>`);
+    if(on) o.push(`<rect x="${ml-4}" y="${y-2}" width="${w+8}" height="${bh+4}" fill="none" stroke="var(--ink)" stroke-width="1.6" rx="3"/>`);
+  });
+  const xd=ml+c.D/dmax*bw;
+  o.push(`<line x1="${xd}" y1="${mt-14}" x2="${xd}" y2="${H-mb+6}" stroke="var(--ink)" stroke-width="1.4" stroke-dasharray="4 3"/>
+    <text x="${xd+6}" y="${H-mb+20}" font-size="11" font-family="var(--mono)" font-weight="600" fill="var(--ink)">D = ${f1(c.D)} m</text>`);
+  o.push(`<text x="${ml}" y="${H-mb+20}" font-size="10.5" font-family="var(--disp)" font-weight="600" fill="var(--ink2)">${t("diaAx")}</text>`);
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${t("secDia")}">${o.join("")}</svg>`;
+}
+
+const SEGCOL={w:"var(--water)",o:"var(--oil)",g:"var(--gas)",m:"var(--ink2)"};
+function heightBar(c){
+  const W=620,H=250,ml=16,mr=16,mt=40;
+  const bw=W-ml-mr, bh=46;
+  let x=ml; const o=[];
+  o.push(`<text x="${ml}" y="${mt-14}" font-size="10.5" font-family="var(--disp)" font-weight="600" fill="var(--ink2)">${t("htAx")}</text>`);
+  c.SEG.forEach(([k,v,ph])=>{
+    const w=v/c.H*bw; if(w<=0.3){x+=w;return;}
+    o.push(`<rect x="${x}" y="${mt}" width="${w}" height="${bh}" fill="${SEGCOL[ph]}" opacity=".8"/>`);
+    if(w>42) o.push(`<text x="${x+w/2}" y="${mt+bh/2+5}" text-anchor="middle" font-size="11" font-family="var(--mono)" fill="var(--paper)">${f1(v)}</text>`);
+    x+=w;
+  });
+  o.push(`<rect x="${ml}" y="${mt}" width="${bw}" height="${bh}" fill="none" stroke="var(--ink)" stroke-width="1.4"/>`);
+  o.push(`<text x="${W-mr}" y="${mt-14}" text-anchor="end" font-size="12" font-family="var(--mono)" font-weight="600" fill="var(--ink)">${f1(c.H)} m</text>`);
+  /* ranked list beneath */
+  const sorted=c.SEG.slice().sort((a,b)=>b[1]-a[1]);
+  sorted.forEach(([k,v,ph],i)=>{
+    const col=i<4?0:1, row=i%4;
+    const xx=ml+col*(bw/2), yy=mt+bh+26+row*21;
+    o.push(`<rect x="${xx}" y="${yy-9}" width="10" height="10" fill="${SEGCOL[ph]}" rx="2"/>
+      <text x="${xx+16}" y="${yy}" font-size="11.5" font-family="var(--body)" fill="var(--ink2)">${t(k)}</text>
+      <text x="${xx+bw/2-18}" y="${yy}" text-anchor="end" font-size="11.5" font-family="var(--mono)" fill="var(--ink)">${f1(v)} m</text>`);
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${t("secHt")}">${o.join("")}</svg>`;
+}
+
+const REGFILL=["var(--okBg)","var(--panel2)","var(--warnBg)","var(--alertBg)"];
+const REGINK=["var(--ok)","var(--ink2)","var(--warn)","var(--alert)"];
+function regionMap(c,big){
+  const W=big?660:560,H=big?400:330,ml=56,mr=20,mt=18,mb=46;
+  const x0=0.01,x1=1e4,y0=2.5,y1=7.5;
+  const X=p=>ml+(Math.log10(p)-Math.log10(x0))/(Math.log10(x1)-Math.log10(x0))*(W-ml-mr);
+  const Y=v=>H-mb-(v-y0)/(y1-y0)*(H-mt-mb);
+  const o=[], N=120, xs=[];
+  for(let i=0;i<=N;i++) xs.push(SSCLIM.p0*Math.pow(x1/SSCLIM.p0,i/N));
+  const up=xs.map(p=>[X(p),Y(Math.min(sscUpper(p),y1))]);
+  const lo=xs.map(p=>[X(p),Y(sscLower(p))]);
+  const pl=a=>a.map(q=>q[0].toFixed(1)+","+q[1].toFixed(1)).join(" ");
+  o.push(`<rect x="${ml}" y="${mt}" width="${X(SSCLIM.p0)-ml}" height="${H-mb-mt}" fill="${REGFILL[0]}"/>`);
+  o.push(`<polygon points="${pl(up)} ${X(x1).toFixed(1)},${Y(y1).toFixed(1)} ${X(SSCLIM.p0).toFixed(1)},${Y(y1).toFixed(1)}" fill="${REGFILL[1]}"/>`);
+  o.push(`<polygon points="${pl(up)} ${pl(lo.slice().reverse())}" fill="${REGFILL[2]}"/>`);
+  o.push(`<polygon points="${pl(lo)} ${X(x1).toFixed(1)},${Y(y0).toFixed(1)} ${X(SSCLIM.p0).toFixed(1)},${Y(y0).toFixed(1)}" fill="${REGFILL[3]}"/>`);
+  for(let d=-2;d<=4;d++){const xv=Math.pow(10,d),x=X(xv);
+    o.push(`<line x1="${x}" y1="${mt}" x2="${x}" y2="${H-mb}" stroke="var(--rule)" stroke-width=".7" opacity=".55"/>
+      <text x="${x}" y="${H-mb+15}" text-anchor="middle" font-size="9.5" font-family="var(--mono)" fill="var(--ink2)">${xv>=1?xv.toLocaleString("en-US"):xv}</text>`);}
+  for(let v=3;v<=7;v++){const y=Y(v);
+    o.push(`<line x1="${ml}" y1="${y}" x2="${W-mr}" y2="${y}" stroke="var(--rule)" stroke-width=".7" opacity=".55"/>
+      <text x="${ml-7}" y="${y+3.5}" text-anchor="end" font-size="9.5" font-family="var(--mono)" fill="var(--ink2)">${v}.0</text>`);}
+  o.push(`<polyline points="${pl(up)}" fill="none" stroke="var(--ink)" stroke-width="1.8"/>`);
+  o.push(`<polyline points="${pl(lo)}" fill="none" stroke="var(--ink)" stroke-width="1.8"/>`);
+  o.push(`<line x1="${X(SSCLIM.p0)}" y1="${mt}" x2="${X(SSCLIM.p0)}" y2="${H-mb}" stroke="var(--ink)" stroke-width="2.4"/>
+    <text x="${X(SSCLIM.p0)-5}" y="${mt+12}" text-anchor="end" font-size="9.5" font-family="var(--mono)" fill="var(--ink)">0,3 kPa</text>`);
+  o.push(`<line x1="${X(SSCLIM.pMax)}" y1="${mt}" x2="${X(SSCLIM.pMax)}" y2="${H-mb}" stroke="var(--alert)" stroke-width="1.2" stroke-dasharray="4 3"/>
+    <text x="${X(SSCLIM.pMax)+5}" y="${mt+12}" font-size="9.5" font-family="var(--mono)" fill="var(--alert)">1 MPa</text>`);
+  const lab=(p,v,i)=>`<text x="${X(p)}" y="${Y(v)}" text-anchor="middle" font-size="${big?17:15}" font-family="var(--disp)" font-weight="700" fill="${REGINK[i]}">${i}</text>`;
+  o.push(lab(0.045,5.1,0)); o.push(lab(3,6.6,1)); o.push(lab(30,5.5,2)); o.push(lab(900,3.6,3));
+  if(c&&c.water&&c.ph2sk>0){
+    const px=Math.min(Math.max(c.ph2sk,x0),x1), py=Math.min(Math.max(S.ph,y0),y1);
+    o.push(`<line x1="${X(px)}" y1="${mt}" x2="${X(px)}" y2="${H-mb}" stroke="var(--ink)" stroke-width=".8" stroke-dasharray="2 3" opacity=".5"/>
+      <line x1="${ml}" y1="${Y(py)}" x2="${W-mr}" y2="${Y(py)}" stroke="var(--ink)" stroke-width=".8" stroke-dasharray="2 3" opacity=".5"/>
+      <circle cx="${X(px)}" cy="${Y(py)}" r="6.5" fill="var(--panel)" stroke="var(--ink)" stroke-width="2.6"/>
+      <text x="${X(px)+11}" y="${Y(py)-9}" font-size="10.5" font-family="var(--mono)" font-weight="500" stroke="var(--panel)" stroke-width="3.5" paint-order="stroke" fill="var(--ink)">${f1(c.ph2sk,2)} kPa &#183; pH ${f1(S.ph,1)}</text>`);
+  }
+  o.push(`<rect x="${ml}" y="${mt}" width="${W-ml-mr}" height="${H-mb-mt}" fill="none" stroke="var(--ink2)" stroke-width="1.2"/>
+    <text x="${(ml+W-mr)/2}" y="${H-8}" text-anchor="middle" font-size="10.5" font-family="var(--disp)" font-weight="600" fill="var(--ink2)">${t("regAx")}</text>
+    <text x="16" y="${(mt+H-mb)/2}" text-anchor="middle" font-size="10.5" font-family="var(--disp)" font-weight="600" fill="var(--ink2)" transform="rotate(-90 16 ${(mt+H-mb)/2})">${t("regAy")}</text>`);
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${t("regMap")}">${o.join("")}</svg>`;
+}
+
+/* ============================================================ glossary */
+const GLOSS=[
+{k:"gGrpV",items:[
+ {t:["Separador vertical","Vertical separator"],
+  d:["Recipiente cilíndrico de eje vertical donde el gas sube y los líquidos bajan, con las fases apiladas: agua en el fondo, aceite encima y gas arriba. Ocupa poca planta, tolera mejor los oleajes de líquido y maneja arena con fondo cónico, pero separa peor cuando el caudal de líquido es alto.",
+     "Cylindrical vessel with a vertical axis in which gas rises and liquids descend, with the phases stacked: water at the bottom, oil above it and gas on top. It takes little plot space, tolerates liquid slugs better and handles sand with a conical bottom, but separates worse when the liquid rate is high."],
+  r:"—"},
+ {t:["El diámetro no se negocia","The diameter does not trade"],
+  d:["Es la diferencia de fondo con un horizontal. Allí el diámetro y la longitud se intercambian y por eso existe una envolvente de dimensionamiento. Aquí cada criterio de velocidad fija un área mínima directamente, y el diámetro es simplemente el mayor de los tres. No hay curva que recorrer.",
+     "This is the fundamental difference from a horizontal vessel. There, diameter and length trade against each other and that is why a sizing envelope exists. Here each velocity criterion fixes a minimum area directly, and the diameter is simply the largest of the three. There is no curve to travel along."],
+  r:"—"},
+ {t:["Criterio de gas","Gas criterion"],
+  d:["La gota de líquido debe caer contra el gas que sube. La velocidad admisible es la menor entre la velocidad terminal de la gota de diseño y la de Souders-Brown del extractor de niebla; el área requerida es el caudal de gas dividido por esa velocidad.",
+     "The liquid droplet must fall against the rising gas. The allowable velocity is the lesser of the terminal velocity of the design droplet and the Souders-Brown velocity of the mist extractor; the required area is the gas flow divided by that velocity."],
+  r:"—"},
+ {t:["Criterio de agua en aceite","Water-in-oil criterion"],
+  d:["La gota de agua debe bajar a través de la capa de aceite mientras el aceite sube hacia su salida. El área requerida es el caudal de aceite dividido por la velocidad de decantación de la gota de agua. En crudos viscosos este criterio domina sobre el de gas por un factor grande.",
+     "The water droplet must descend through the oil layer while the oil rises toward its outlet. The required area is the oil flow divided by the settling velocity of the water droplet. In viscous crudes this criterion dominates over the gas one by a large factor."],
+  r:"—"},
+ {t:["Criterio de aceite en agua","Oil-in-water criterion"],
+  d:["La gota de aceite debe subir a través del agua que baja hacia la salida de fondo. El área requerida es el caudal de agua dividido por la velocidad de ascenso de la gota de aceite. Es el mismo criterio contracorriente que dimensiona la bota de un separador horizontal.",
+     "The oil droplet must rise through the water descending toward the bottom outlet. The required area is the water flow divided by the rise velocity of the oil droplet. It is the same countercurrent criterion that sizes the boot of a horizontal separator."],
+  r:"—"},
+ {t:["Presupuesto de altura","Height budget"],
+  d:["La altura entre tangentes no sale de una fórmula sino de una suma de tramos, cada uno con su propia causa: holgura de fondo, retención de agua, retención de aceite, separación entre el nivel alto y la boquilla de entrada, desprendimiento hasta la malla, espesor de la malla y altura libre superior.",
+     "The tangent-to-tangent height does not come from a formula but from a sum of segments, each with its own cause: bottom clearance, water retention, oil retention, separation between the high level and the feed nozzle, disengagement up to the mesh, mesh thickness and upper freeboard."],
+  r:"—"},
+ {t:["Altura de desprendimiento","Disengagement height"],
+  d:["Espacio entre la boquilla de entrada y el extractor de niebla, para que el chorro de alimentación pierda su cantidad de movimiento antes de llegar a la malla. Una regla habitual es tomar el mayor entre un mínimo fijo y el propio diámetro, que es lo que hace que en un vertical ancho este tramo domine el presupuesto de altura.",
+     "Space between the feed nozzle and the mist extractor, so that the feed jet loses its momentum before reaching the mesh. A common rule is to take the greater of a fixed minimum and the diameter itself, which is what makes this segment dominate the height budget in a wide vertical vessel."],
+  r:"—"},
+ {t:["Esbeltez H/D","Slenderness H/D"],
+  d:["Relación entre la altura entre tangentes y el diámetro interior. El rango habitual va de 2 a 4. Por debajo el recipiente resulta achatado y suele convenir un horizontal; por encima crecen el faldón, las cargas de viento y el costo de montaje.",
+     "Ratio of tangent-to-tangent height to inside diameter. The usual range runs from 2 to 4. Below it the vessel comes out squat and a horizontal one is usually preferable; above it the skirt, the wind loads and the erection cost all grow."],
+  r:"—"},
+ {t:["Faldón, viento y sismo","Skirt, wind and seismic"],
+  d:["Un vertical sobre faldón es una ménsula empotrada: el viento y el sismo producen un momento flector que se suma a la tensión longitudinal y puede gobernar el espesor del anillo inferior. Esta herramienta no lo calcula. El código de recipientes cubre la respuesta a cargas no debidas a presión, pero las cargas mismas vienen de la normativa de acciones: Eurocódigo para viento y sismo, o NSR-10 en Colombia.",
+     "A vertical vessel on a skirt is a cantilever: wind and seismic action produce a bending moment that adds to the longitudinal stress and can govern the thickness of the bottom course. This tool does not calculate it. The vessel code covers the response to non-pressure loads, but the loads themselves come from the actions codes: Eurocode for wind and seismic, or NSR-10 in Colombia."],
+  r:"EN 13445-3 · EN 1991-1-4 · NSR-10"},
+ {t:["Cuándo elegir vertical","When to choose vertical"],
+  d:["Conviene con relación gas-líquido alta, caudal de líquido bajo, planta escasa, oleajes frecuentes o arena que haya que drenar. Deja de convenir cuando el líquido manda: con alto corte de agua o crudo viscoso, los criterios contracorriente inflan el diámetro y un horizontal con vertedero resuelve lo mismo con menos acero.",
+     "It suits a high gas-to-liquid ratio, a low liquid rate, scarce plot space, frequent slugging or sand that has to be drained. It stops suiting when the liquid dominates: with a high water cut or a viscous crude, the countercurrent criteria inflate the diameter and a horizontal vessel with a weir solves the same problem with less steel."],
+  r:"ISO 21457 §7.2"}
+]},
+{k:"gSour",items:[
+ {t:["Servicio amargo","Sour service"],
+  d:["Exposición a un fluido que contiene agua líquida y H₂S por encima del umbral de la figura de regiones. La clasificación no depende de cuánta corrosión general haya, sino de la posibilidad de agrietamiento.",
+     "Exposure to a fluid containing liquid water and H₂S above the threshold of the region figure. The classification does not depend on how much general corrosion there is, but on the possibility of cracking."],
+  r:"ISO 15156-1 · ISO 15156-2 §7.2.1"},
+ {t:["Presión parcial de H₂S","H₂S partial pressure"],
+  d:["Fracción molar de H₂S multiplicada por la presión total absoluta del sistema. Es la entrada horizontal de la figura de regiones; la guía de cálculo está en el anexo C de la norma.",
+     "Mole fraction of H₂S multiplied by the total absolute system pressure. It is the horizontal input of the region figure; the calculation guidance sits in Annex C of the standard."],
+  r:"ISO 15156-2 §7.2.1.2 · Anexo C"},
+ {t:["pH in situ","In situ pH"],
+  d:["pH del agua en contacto con el acero en las condiciones reales de presión, temperatura y composición, no el medido en superficie. Decide verticalmente en qué región cae el servicio.",
+     "pH of the water in contact with the steel at the real conditions of pressure, temperature and composition, not the value measured at surface. It decides vertically which region the service falls in."],
+  r:"ISO 15156-2 §7.2.1.2 · Anexo D"},
+ {t:["Región 0","Region 0"],
+  d:["Por debajo de 0,3 kPa (0,05 psi) de presión parcial de H₂S. Normalmente no se requieren precauciones de selección por SSC. Aun así, los aceros muy susceptibles pueden agrietarse, y por encima de unos 965 MPa de límite elástico hay que atender a composición y procesamiento por riesgo de agrietamiento por hidrógeno incluso sin H₂S.",
+     "Below 0.3 kPa (0.05 psi) of H₂S partial pressure. Normally no precautions are required for selection against SSC. Even so, highly susceptible steels can crack, and above roughly 965 MPa yield strength composition and processing deserve attention because of hydrogen stress cracking even without H₂S."],
+  r:"ISO 15156-2 §7.2.1.3"},
+ {t:["Región 1","Region 1"],
+  d:["La menos severa de las tres regiones con H₂S. Admite seleccionar por las rutas A.2, A.3 o A.4. En aceros de línea, resistencias de hasta unos 550 MPa de SMYS y durezas de soldadura de hasta 300 HV han resultado aceptables.",
+     "The least severe of the three regions with H₂S. Selection is admitted through routes A.2, A.3 or A.4. For pipeline steels, strengths up to about 550 MPa SMYS and weld hardness up to 300 HV have proven acceptable."],
+  r:"ISO 15156-2 §7.2.1.4 · A.4"},
+ {t:["Región 2","Region 2"],
+  d:["Severidad intermedia. Admite las rutas A.2 o A.3. En aceros de línea, SMYS de hasta unos 450 MPa y durezas de soldadura de hasta 280 HV han resultado aceptables.",
+     "Intermediate severity. Routes A.2 or A.3 are admitted. For pipeline steels, SMYS up to about 450 MPa and weld hardness up to 280 HV have proven acceptable."],
+  r:"ISO 15156-2 §7.2.1.4 · A.3"},
+ {t:["Región 3","Region 3"],
+  d:["La más severa. Solo admite la ruta A.2, que es la ruta general de la norma: acero al carbono y de baja aleación con dureza máxima de 22 HRC, menos de 1 % en masa de níquel, sin aceros de fácil mecanizado, y en una de las condiciones de tratamiento térmico listadas.",
+     "The most severe. Only route A.2 is admitted, which is the standard's general route: carbon and low-alloy steel at 22 HRC maximum hardness, less than 1 % mass fraction nickel, no free-machining steels, and in one of the listed heat-treatment conditions."],
+  r:"ISO 15156-2 §7.2.1.4 · A.2.1.2"},
+ {t:["Advertencia sobre A.3 y A.4","Caveat on A.3 and A.4"],
+  d:["La propia norma advierte que, al momento de su publicación, no existen listados de aceros aprobados para las rutas A.3 ni A.4. Esas dos rutas describen solo propiedades típicas, de modo que en la práctica se termina en A.2 o en calificación por el anexo B.",
+     "The standard itself warns that, at the time of its publication, there are no listings of steels approved for routes A.3 or A.4. Those two routes describe only typical properties, so in practice one ends up on A.2 or on qualification through Annex B."],
+  r:"ISO 15156-2 §A.1 · Anexo B"},
+ {t:["Dureza de soldadura","Weld hardness"],
+  d:["El límite general de la ruta A.2 para la zona de soldadura es 250 HV, o 22 HRC sujeto a las restricciones del método. Los ensayos Vickers se hacen según ISO 6507-1, con los barridos que la norma define para soldadura a tope y en ángulo.",
+     "The general limit of route A.2 for the weld zone is 250 HV, or 22 HRC subject to the restrictions of the method. Vickers testing follows ISO 6507-1, using the survey patterns the standard defines for butt and fillet welds."],
+  r:"ISO 15156-2 §7.3.3 · A.2.1.4 · Tabla A.1"}
+]},
+{k:"gMech2",items:[
+ {t:["SSC — agrietamiento por sulfuros bajo tensión","SSC — sulfide stress cracking"],
+  d:["Agrietamiento por la acción combinada de tensión de tracción y corrosión en presencia de agua y H₂S. Es una forma de agrietamiento por hidrógeno: el hidrógeno atómico que genera la corrosión ácida entra al metal y reduce su ductilidad. Los materiales de alta resistencia y las zonas duras de soldadura son los más propensos.",
+     "Cracking under the combined action of tensile stress and corrosion in the presence of water and H₂S. It is a form of hydrogen cracking: atomic hydrogen generated by acid corrosion enters the metal and reduces its ductility. High-strength materials and hard weld zones are the most prone."],
+  r:"ISO 15156-1 · ISO 15156-2 §7.2.1"},
+ {t:["HIC — agrietamiento inducido por hidrógeno","HIC — hydrogen induced cracking"],
+  d:["Agrietamiento planar que no necesita tensión externa: el hidrógeno se recombina en trampas internas, típicamente inclusiones alargadas o microestructura bandeada, y las presuriza. Depende de la limpieza inclusionaria del acero, no de la soldadura.",
+     "Planar cracking that needs no external stress: hydrogen recombines in internal traps, typically elongated inclusions or banded microstructure, and pressurises them. It depends on the inclusion cleanliness of the steel, not on the welding."],
+  r:"ISO 15156-2 §7.2.2 · Anexo B"},
+ {t:["SOHIC — agrietamiento orientado por tensión","SOHIC — stress-oriented HIC"],
+  d:["Variante del HIC en la que las grietas se alinean perpendicularmente a la tensión principal y forman escalones. La norma pide considerarlo expresamente en aceros al carbono en forma de chapa y en sus productos soldados, que es el caso de la envolvente de este recipiente.",
+     "A variant of HIC in which the cracks align perpendicular to the principal stress and form steps. The standard asks that it be considered expressly for carbon steels in plate form and their welded products, which is the case of this vessel's shell."],
+  r:"ISO 15156-2 §7.2.2 · B.4"},
+ {t:["SZC — agrietamiento de zona blanda","SZC — soft zone cracking"],
+  d:["Agrietamiento en la zona afectada por el calor de la soldadura, asociado a zonas de menor resistencia que concentran deformación. Como el SOHIC, es raro, no está bien entendido y ha causado fallas súbitas.",
+     "Cracking in the heat-affected zone of a weld, associated with lower-strength zones that concentrate strain. Like SOHIC it is rare, not well understood, and has caused sudden failures."],
+  r:"ISO 15156-2 §7.2.2 · B.4"},
+ {t:["SCC por cloruros","Chloride stress corrosion cracking"],
+  d:["Agrietamiento de aceros inoxidables en presencia de cloruros y temperatura, favorecido por la evaporación y la concentración local en rendijas. Ocurre sin H₂S y sin oxígeno disuelto, y las soldaduras son las zonas más vulnerables.",
+     "Cracking of stainless steels in the presence of chlorides and temperature, favoured by evaporation and local concentration in crevices. It occurs without H₂S and without dissolved oxygen, and welds are the most vulnerable zones."],
+  r:"ISO 21457 §6.2.2.6 · §6.6.2"},
+ {t:["Corrosión por rendija","Crevice corrosion"],
+  d:["Ataque localizado en espacios confinados donde el fluido queda estancado y la química local se acidifica. En un vertical el punto característico es la unión del faldón al fondo inferior, que forma una rendija anular difícil de inspeccionar y de drenar.",
+     "Localised attack in confined spaces where the fluid stagnates and the local chemistry acidifies. In a vertical vessel the characteristic location is the skirt-to-bottom-head junction, which forms an annular crevice that is hard to inspect and hard to drain."],
+  r:"ISO 8044 · ISO 21457 §8.7"},
+ {t:["CUI — corrosión bajo aislamiento","CUI — corrosion under insulation"],
+  d:["Corrosión de la superficie externa bajo el aislamiento térmico, por agua retenida y cloruros. En un vertical el agua escurre por toda la altura y se acumula en los anillos de soporte del aislamiento, que son las trampas naturales del conjunto.",
+     "Corrosion of the external surface beneath thermal insulation, from retained water and chlorides. In a vertical vessel water runs down the full height and collects at the insulation support rings, which are the natural traps of the assembly."],
+  r:"ISO 21457 §6.6.5"},
+ {t:["MIC — corrosión microbiológica","MIC — microbiologically influenced corrosion"],
+  d:["Corrosión causada por bacterias sésiles en contacto con el acero. Se favorece con velocidades bajas y zonas de depósito; en un vertical, el fondo inferior donde la arena decanta y el agua casi no se mueve.",
+     "Corrosion caused by sessile bacteria in contact with the steel. It is favoured by low velocities and settling zones; in a vertical vessel, the bottom head where sand settles and the water barely moves."],
+  r:"ISO 21457 §6.2.2.3"},
+ {t:["Corrosión bajo depósito","Under-deposit corrosion"],
+  d:["Ataque bajo capas de arena o incrustación que aíslan el metal del seno del fluido y del inhibidor. El fondo de un vertical es el colector natural de sólidos, de modo que es donde este mecanismo se concentra.",
+     "Attack beneath layers of sand or scale that isolate the metal from the bulk fluid and from the inhibitor. The bottom of a vertical vessel is the natural collector of solids, so it is where this mechanism concentrates."],
+  r:"ISO 21457 §6.2.2.2 · §6.5"}
+]},
+{k:"gProc",items:[
+ {t:["Velocidad terminal de la gota","Droplet terminal velocity"],
+  d:["Velocidad de caída de una gota en el gas cuando el arrastre iguala al peso. La herramienta la resuelve con un coeficiente de arrastre dependiente del número de Reynolds, y no con Stokes puro, porque a presión alta la gota sale del régimen de Stokes.",
+     "Falling velocity of a droplet in the gas when drag equals weight. The tool solves it with a Reynolds-dependent drag coefficient rather than pure Stokes, because at high pressure the droplet leaves the Stokes regime."],
+  r:"—"},
+ {t:["Factor K de Souders-Brown","Souders-Brown K factor"],
+  d:["Constante empírica que fija la velocidad máxima admisible del gas como K·√((ρL−ρG)/ρG). En un vertical con extractor de niebla el valor habitual es menor que en un horizontal, porque toda la carga de gas atraviesa la malla de frente.",
+     "Empirical constant that sets the maximum allowable gas velocity as K·√((ρL−ρG)/ρG). In a vertical vessel with a mist extractor the usual value is lower than in a horizontal one, because the whole gas load crosses the mesh head-on."],
+  r:"—"},
+ {t:["Tiempo de retención","Retention time"],
+  d:["Tiempo que una fase líquida permanece dentro del equipo. En un vertical se traduce directamente en altura, no en longitud: cada fase ocupa su propia banda de altura sobre la misma sección transversal.",
+     "Time a liquid phase stays inside the equipment. In a vertical vessel it translates directly into height, not length: each phase occupies its own band of height over the same cross-section."],
+  r:"—"},
+ {t:["Deflector de entrada","Inlet deflector"],
+  d:["Placa o dispositivo que recibe el chorro de alimentación y le quita cantidad de movimiento, para que el líquido no sea proyectado contra la pared ni arrastrado hacia la malla. Es un elemento delgado sin sobreespesor disponible y suele ser la primera pieza que se cambia.",
+     "Plate or device that receives the feed jet and takes away its momentum, so that the liquid is neither thrown against the wall nor carried toward the mesh. It is a thin element with no corrosion allowance available and is usually the first part to be replaced."],
+  r:"—"},
+ {t:["Rompevórtices","Vortex breaker"],
+  d:["Elemento sobre la salida de fondo que impide la formación del remolino que arrastraría gas o aceite hacia la línea de agua. Vive sumergido en la zona de menor velocidad del recipiente, que es la más agresiva.",
+     "Element over the bottom outlet that prevents the vortex which would otherwise draw gas or oil into the water line. It lives submerged in the lowest-velocity zone of the vessel, which is the most aggressive one."],
+  r:"—"}
+]},
+{k:"gDes",items:[
+ {t:["Tensión nominal de diseño f","Nominal design stress f"],
+  d:["Tensión admisible del material a la temperatura de diseño. Para acero no austenítico en la situación normal de carga, es el menor valor entre el límite elástico a temperatura dividido por 1,5 y la resistencia a tracción a 20 °C dividida por 2,4.",
+     "Allowable stress of the material at the design temperature. For non-austenitic steel under the normal load case, it is the lesser of the yield strength at temperature divided by 1.5 and the tensile strength at 20 °C divided by 2.4."],
+  r:"EN 13445-3 §6"},
+ {t:["Coeficiente de unión soldada z","Weld joint coefficient z"],
+  d:["Factor que penaliza el espesor calculado según el alcance del ensayo no destructivo de las soldaduras. Vale 1 cuando el examen es completo, y menos cuando es parcial.",
+     "Factor that penalises the calculated thickness according to the extent of non-destructive examination of the welds. It is 1 when examination is complete, and less when it is partial."],
+  r:"EN 13445-3 §5 · Anexo A"},
+ {t:["Presión interna frente a cargas globales","Internal pressure versus global loads"],
+  d:["Esta herramienta dimensiona el espesor solo por presión interna. En un vertical esbelto hay además una tensión longitudinal por peso propio y por el momento de viento y sismo, que puede gobernar el anillo inferior. Es la diferencia más importante frente a un horizontal sobre sillas.",
+     "This tool sizes the thickness for internal pressure only. In a slender vertical vessel there is additionally a longitudinal stress from self-weight and from the wind and seismic moment, which can govern the bottom course. It is the most important difference from a horizontal vessel on saddles."],
+  r:"EN 13445-3"},
+ {t:["Sobreespesor por corrosión","Corrosion allowance"],
+  d:["Espesor adicional que se consume durante la vida de diseño. Sale de la velocidad de corrosión de diseño multiplicada por los años, no de un valor de catálogo, y tiene un máximo práctico por encima del cual deja de ser la solución correcta.",
+     "Additional thickness consumed over the design life. It comes from the design corrosion rate multiplied by the years, not from a catalogue value, and it has a practical maximum above which it stops being the right solution."],
+  r:"ISO 21457 §8.2"},
+ {t:["Disponibilidad de la mitigación","Mitigation availability"],
+  d:["Fracción del tiempo en que el tratamiento químico está realmente operando. La velocidad de corrosión de diseño combina la tasa inhibida durante ese tiempo con la tasa desnuda durante el resto, y es esa combinación la que dimensiona el sobreespesor.",
+     "Fraction of the time the chemical treatment is genuinely operating. The design corrosion rate combines the inhibited rate over that time with the bare rate over the remainder, and it is that combination which sizes the allowance."],
+  r:"ISO 21457 §8.1"},
+ {t:["Fondo toriesférico","Torispherical head"],
+  d:["Fondo formado por un casquete esférico y un nudo de transición hacia la envolvente. Esta herramienta calcula solo la porción esférica; la norma exige además las verificaciones de pandeo plástico y de pandeo del nudo.",
+     "Head formed by a spherical crown and a transition knuckle to the shell. This tool calculates only the spherical portion; the standard additionally requires the plastic buckling and knuckle buckling checks."],
+  r:"EN 13445-3 §7.5"}
+]},
+{k:"gMat",items:[
+ {t:["CRA — aleación resistente a la corrosión","CRA — corrosion resistant alloy"],
+  d:["En la metodología de selección no es un punto de partida: se evalúa frente al acero al carbono con control de corrosión y se justifica cuando ese caso base no cierra, con números y no por precaución.",
+     "In the selection methodology it is not a starting point: it is evaluated against carbon steel with corrosion control and justified when that base case does not close, with numbers rather than out of caution."],
+  r:"ISO 21457 §7.2.1"},
+ {t:["PREN","PREN"],
+  d:["Número equivalente de resistencia a la picadura, calculado como %Cr + 3,3(%Mo + 0,5·%W) + 16·%N. Ordena las aleaciones por resistencia a la corrosión localizada, pero no sustituye al límite de temperatura de cada familia en el ambiente concreto.",
+     "Pitting resistance equivalent number, calculated as %Cr + 3.3(%Mo + 0.5·%W) + 16·%N. It ranks alloys by resistance to localised corrosion, but it does not replace the temperature limit of each family in the specific environment."],
+  r:"—"},
+ {t:["Acero dúplex","Duplex stainless steel"],
+  d:["Estructura mixta de ferrita y austenita, con mayor resistencia mecánica que un austenítico y mejor comportamiento frente a cloruros. Exige control de fases intermetálicas en soldadura y es sensible a la fragilización bajo protección catódica.",
+     "Mixed ferrite and austenite structure, with higher mechanical strength than an austenitic grade and better behaviour against chlorides. It requires control of intermetallic phases in welding and is sensitive to embrittlement under cathodic protection."],
+  r:"ISO 21457 §6.6.4 · EN 10088"},
+ {t:["Revestimiento de la banda de interfaz","Interface band lining"],
+  d:["En un vertical la zona permanentemente mojada es un anillo estrecho y de posición fija, determinado por el control de nivel. Eso permite revestir solo esa banda en lugar de engrosar toda la envolvente, que es la ventaja de materiales más clara de esta geometría.",
+     "In a vertical vessel the permanently wetted zone is a narrow ring at a fixed position, set by the level control. That allows lining only that band instead of thickening the whole shell, which is the clearest materials advantage of this geometry."],
+  r:"ISO 21457 §8.4 · ISO 12944"},
+ {t:["Certificado de inspección","Inspection document"],
+  d:["Documento que acredita el cumplimiento del pedido. El tipo 3.1 lo emite el fabricante a través de su propio departamento de inspección independiente de la producción; el 3.2 lo emite además un representante del comprador o un organismo externo.",
+     "Document that attests conformity with the order. Type 3.1 is issued by the manufacturer through its own inspection department independent of production; type 3.2 is additionally issued by a purchaser's representative or an external body."],
+  r:"EN 10204"}
+]}];
+
+const STDS=[
+ ["ISO 15156-1",["Principios generales de selección de materiales resistentes al agrietamiento en ambientes con H₂S","General principles for selecting cracking-resistant materials in H₂S environments"],
+  ["Define el marco, la terminología de los mecanismos y la vía de calificación","Defines the framework, the mechanism terminology and the qualification route"]],
+ ["ISO 15156-2",["Aceros al carbono y de baja aleación, y hierros fundidos","Carbon and low-alloy steels, and cast irons"],
+  ["Regiones de severidad SSC, rutas A.2 a A.4, límites de dureza y ensayos de HIC, SOHIC y SZC","SSC severity regions, routes A.2 to A.4, hardness limits and HIC, SOHIC and SZC testing"]],
+ ["ISO 15156-3",["Aleaciones resistentes a la corrosión y otras aleaciones","Corrosion-resistant alloys and other alloys"],
+  ["Límites ambientales por familia de aleación para internos y rompevórtices","Environmental limits per alloy family for internals and vortex breakers"]],
+ ["ISO 17945",["Materiales resistentes a SSC en ambientes corrosivos de refinación","SSC-resistant materials in corrosive petroleum refining environments"],
+  ["Equivalente de refinación; aplica si el equipo está aguas abajo del campo","The refining equivalent; applies if the equipment sits downstream of the field"]],
+ ["ISO 21457",["Selección de materiales y control de la corrosión en sistemas de producción","Materials selection and corrosion control in production systems"],
+  ["Es el esqueleto metodológico de toda la herramienta: base de diseño, cribado, control y monitoreo","The methodological backbone of the whole tool: design basis, screening, control and monitoring"]],
+ ["ISO 23936-2",["No metálicos en contacto con fluidos de producción: elastómeros","Non-metallics in contact with production fluids: elastomers"],
+  ["Juntas de las bridas y de las bocas de inspección","Gaskets for the flanges and the inspection openings"]],
+ ["EN 13445-3",["Recipientes a presión no sometidos a llama: diseño","Unfired pressure vessels: design"],
+  ["Tensión nominal de diseño, espesor de envolvente y verificaciones de fondos","Nominal design stress, shell thickness and head checks"]],
+ ["EN 13445-2",["Recipientes a presión no sometidos a llama: materiales","Unfired pressure vessels: materials"],
+  ["Qué materiales admite el código y con qué requisitos","Which materials the code admits and under what requirements"]],
+ ["EN 10028-2 / -3",["Chapas de acero para recipientes a presión: no aleados y de grano fino","Steel plate for pressure purposes: non-alloy and fine-grain"],
+  ["Grados y propiedades mecánicas de la chapa de la envolvente","Grades and mechanical properties of the shell plate"]],
+ ["EN 10028-7",["Chapas de acero inoxidable para recipientes a presión","Stainless steel plate for pressure purposes"],
+  ["Grados inoxidables y dúplex cuando el acero al carbono deja de servir","Stainless and duplex grades when carbon steel stops serving"]],
+ ["EN 10088-1..3",["Aceros inoxidables: listas, chapas y productos largos","Stainless steels: lists, sheet and long products"],
+  ["Composición y designación de los internos: malla, deflector y rompevórtices","Composition and designation of the internals: mesh, deflector and vortex breaker"]],
+ ["EN 10204",["Tipos de documentos de inspección","Types of inspection documents"],
+  ["Qué certificado exigir en la orden de compra","Which certificate to require in the purchase order"]],
+ ["ISO 6507-1",["Ensayo de dureza Vickers","Vickers hardness test"],
+  ["Método con el que se verifican los límites de dureza del servicio amargo","The method by which the sour-service hardness limits are verified"]],
+ ["ISO 9223",["Corrosividad de atmósferas: clasificación","Corrosivity of atmospheres: classification"],
+  ["Categoría del ambiente externo antes de poder especificar recubrimiento","Category of the external environment before any coating can be specified"]],
+ ["ISO 12944-2 / -5",["Protección con sistemas de pintura: ambientes y esquemas","Protection by paint systems: environments and schemes"],
+  ["Recubrimiento externo y revestimiento de la banda de interfaz","External coating and lining of the interface band"]],
+ ["ISO 8044",["Corrosión de metales y aleaciones: vocabulario","Corrosion of metals and alloys: vocabulary"],
+  ["Vocabulario controlado de los mecanismos que nombra el cribado","Controlled vocabulary of the mechanisms the screening names"]],
+ ["EN 1991-1-4 · NSR-10",["Acciones de viento y acciones sísmicas","Wind actions and seismic actions"],
+  ["Fuera del alcance de esta herramienta: de ahí saldrían las cargas para el análisis del faldón","Outside the scope of this tool: the loads for the skirt analysis would come from here"]]
+];
+
+/* ============================================================ UI */
+const num=(id,lab,step)=>`<div class="f"><label for="${id}">${lab}</label><input type="number" id="${id}" value="${S[id]}" step="${step||"any"}"></div>`;
+const numU=(id,lab,uid,opts)=>`<div class="f u"><label for="${id}">${lab}</label>
+  <input type="number" id="${id}" value="${S[id]}" step="any">
+  <select id="${uid}">${opts.map(([v,n])=>`<option value="${v}"${S[uid]===v?" selected":""}>${n}</option>`).join("")}</select></div>`;
+const sel=(id,lab,opts)=>`<div class="f"><label for="${id}">${lab}</label>
+  <select id="${id}">${opts.map(([v,n])=>`<option value="${v}"${S[id]===v?" selected":""}>${n}</option>`).join("")}</select></div>`;
+const chk=(id,lab)=>`<div class="f"><label for="${id}">${lab}</label>
+  <input type="checkbox" id="${id}" ${S[id]?"checked":""} style="width:16px;justify-self:start"></div>`;
+
+function rail(){
+  return `
+<fieldset><legend>${t("scen")}</legend>
+ <div class="chips">
+  <button class="chip" data-scen="A" aria-pressed="${SCEN==="A"}">${t("caseA")}</button>
+  <button class="chip" data-scen="B" aria-pressed="${SCEN==="B"}">${t("caseB")}</button>
+  <button class="chip" data-scen="C" aria-pressed="${SCEN==="C"}">${t("caseC")}</button></div>
+ <p style="font-size:12px;color:var(--ink2);margin:9px 0 0">${I18N[LANG].scenNote[SCEN]}</p></fieldset>
+<fieldset><legend>${t("gFlows")}</legend>
+ ${numU("qo",t("oil"),"qoU",[["m3d","m³/d"],["bbld","bbl/d"]])}
+ ${numU("qw",t("water"),"qwU",[["m3d","m³/d"],["bbld","bbl/d"]])}
+ ${numU("qg",t("gas"),"qgU",[["sm3d","Sm³/d"],["mmscfd","MMscfd"]])}</fieldset>
+<fieldset><legend>${t("gCond")}</legend>
+ ${num("pOp",t("pOp"))}${num("tOp",t("tOp"))}${num("pDes",t("pDes"))}${num("tDes",t("tDes"))}</fieldset>
+<fieldset><legend>${t("gProp")}</legend>
+ ${num("rhoO",t("rhoO"))}${num("rhoW",t("rhoW"))}${num("mwG",t("mwG"))}${num("zG",t("zG"),"0.01")}
+ ${num("muO",t("muO"))}${num("muW",t("muW"),"0.05")}${num("muG",t("muG"),"0.001")}</fieldset>
+<fieldset><legend>${t("gChem")}</legend>
+ ${num("co2",t("co2"),"0.1")}${num("h2s",t("h2s"),"0.01")}${num("cl",t("cl"))}${num("ph",t("ph"),"0.1")}${num("sand",t("sand"))}</fieldset>
+<fieldset><legend>${t("gDia")}</legend>
+ ${num("dmG",t("dmG"))}${num("dmW",t("dmW"))}${num("dmO",t("dmO"))}${num("kSB",t("kSB"),"0.01")}</fieldset>
+<fieldset><legend>${t("gHt")}</legend>
+ ${num("tO",t("tO"))}${num("tW",t("tW"))}${num("h1",t("h1"),"0.05")}${num("hf",t("hf"),"0.05")}
+ ${num("hdMin",t("hdMin"),"0.05")}${num("hm",t("hm"),"0.05")}${num("htMin",t("htMin"),"0.05")}
+ ${num("ldMin",t("ldMin"),"0.5")}${num("ldMax",t("ldMax"),"0.5")}</fieldset>
+<fieldset><legend>${t("gMech")}</legend>
+ ${num("zj",t("zj"),"0.05")}${num("life",t("life"))}${num("addT",t("addT"),"0.5")}${num("caMax",t("caMax"),"0.5")}
+ ${sel("head",t("head"),[["ell",t("hEll")],["tori",t("hTori")]])}
+ ${sel("vmode",t("vcorMode"),[["bare",t("vcorBare")],["mitig",t("vcorMit")],["man",t("vcorMan")]])}
+ ${S.vmode==="man"?num("vcor",t("vcor"),"0.01"):""}
+ ${S.vmode==="mitig"?num("vInh",t("vInh"),"0.01")+num("avail",t("avail"),"1"):""}</fieldset>
+<fieldset><legend>${t("gExt")}</legend>
+ ${sel("env",t("envK"),[["mar",t("envMar")],["trop",t("envTrop")],["ind",t("envInd")]])}
+ ${chk("insul",t("insul"))}</fieldset>`;
+}
+
+function strip(c){
+  const cls=!c.water?t("sNoW"):c.sour?t("sSour"):t("sSweet");
+  const hdTag=c.HD<S.ldMin||c.HD>S.ldMax;
+  return `
+ <div class="${c.sour?"sour":""}"><div class="k">${t("sClass")}</div><div class="v">${cls}</div>
+   <div class="n mono">${t("pco2")} ${f1(c.pco2,3)} · ${t("ph2s")} ${f1(c.ph2s,4)} bar</div></div>
+ <div style="${c.sour?`background:${REGFILL[c.SSC.r]}`:""}"><div class="k">${t("sReg")}</div>
+   <div class="v" style="font-size:17px;color:${c.sour?REGINK[c.SSC.r]:"var(--ink)"}">${c.water?I18N[LANG].regLab[c.SSC.r]:"—"}</div>
+   <div class="n">${c.sour?t("regRoute")+": "+REGREQ[c.SSC.r].route:t("regNone")}</div></div>
+ <div><div class="k">${t("sGovD")}</div><div class="v" style="font-size:16px">${t(c.govD)}</div>
+   <div class="n mono">${f1(c.Dgas)} / ${f1(c.Dwo)} / ${f1(c.Dow)} m</div></div>
+ <div><div class="k">${t("sSize")}</div><div class="v">${f1(c.D)} × ${f1(c.H)} m</div>
+   <div class="n">${t("pD")} × ${t("pH")}</div></div>
+ <div style="${hdTag?"background:var(--warnBg)":""}"><div class="k">${t("sHD")}</div>
+   <div class="v" style="color:${hdTag?"var(--warn)":"var(--ink)"}">${f1(c.HD)}</div>
+   <div class="n mono">${S.ldMin} – ${S.ldMax}</div></div>
+ <div><div class="k">${t("sThk")}</div><div class="v">${c.eNom.toFixed(0)} mm</div>
+   <div class="n mono">${c.shellMat.n}</div></div>`;
+}
+
+const tbl=rows=>`<div class="scroll"><table><thead><tr><th>${t("param")}</th><th class="n">${t("value")}</th><th>${t("unit")}</th><th>${t("note")}</th></tr></thead><tbody>
+  ${rows.map(r=>`<tr><td>${r[0]}</td><td class="n">${r[1]}</td><td>${r[2]||""}</td><td>${r[3]||""}</td></tr>`).join("")}</tbody></table></div>`;
+
+let VIEW="fluid";
+function out(c){
+  const L=LANG, Z=screen(c);
+  const msgs=[];
+  const ratio=c.Dmin/Math.max(Math.min(c.Dgas,c.Dwo,c.Dow),1e-6);
+  if(c.govD!=="govGas") msgs.push(["a",L==="es"
+    ?`El diámetro lo fija la separación líquido-líquido, no el gas: ${t(c.govD).toLowerCase()} exige ${f1(c.Dmin)} m mientras el criterio de gas se conformaría con ${f1(c.Dgas)} m, ${f1(c.Dgas>0?c.Dmin/c.Dgas:0,1)} veces menos. Es la señal de que el servicio está dominado por el líquido.`
+    :`The diameter is set by liquid-liquid separation, not by gas: ${t(c.govD).toLowerCase()} demands ${f1(c.Dmin)} m while the gas criterion would settle for ${f1(c.Dgas)} m, ${f1(c.Dgas>0?c.Dmin/c.Dgas:0,1)} times less. It is the signal that the service is liquid-dominated.`]);
+  if(c.HD<S.ldMin) msgs.push(["w",L==="es"
+    ?`La esbeltez resulta de ${f1(c.HD)}, por debajo del mínimo de ${S.ldMin}. El recipiente queda achatado: con este reparto de caudales suele convenir un separador horizontal.`
+    :`The slenderness comes out at ${f1(c.HD)}, below the minimum of ${S.ldMin}. The vessel is squat: with this flow split a horizontal separator is usually preferable.`]);
+  if(c.HD>S.ldMax) msgs.push(["w",L==="es"
+    ?`La esbeltez resulta de ${f1(c.HD)}, por encima del máximo de ${S.ldMax}. Crecen el faldón y las cargas de viento y sismo, que esta herramienta no calcula.`
+    :`The slenderness comes out at ${f1(c.HD)}, above the maximum of ${S.ldMax}. The skirt and the wind and seismic loads grow, and this tool does not calculate them.`]);
+  if(c.sour){
+    const RR=REGREQ[c.SSC.r];
+    msgs.push(["a",L==="es"
+      ?`Servicio amargo en ${I18N.es.regLab[c.SSC.r]}: la selección queda limitada a la ruta ${RR.route} de ISO 15156-2, con dureza máxima de ${RR.hrc} HRC en metal base y ${RR.hv} HV en la zona de soldadura.`
+      :`Sour service in ${I18N.en.regLab[c.SSC.r]}: selection is limited to route ${RR.route} of ISO 15156-2, with a maximum hardness of ${RR.hrc} HRC in the parent metal and ${RR.hv} HV in the weld zone.`]);
+    msgs.push(["a",L==="es"
+      ?"La envolvente es acero al carbono en chapa soldada: hay que considerar expresamente HIC, SOHIC y SZC además de SSC, y exigir el ensayo correspondiente en la especificación de compra."
+      :"The shell is carbon steel in welded plate: HIC, SOHIC and SZC must be considered expressly alongside SSC, and the corresponding testing required in the purchase specification."]);
+    if(c.SSC.beyond) msgs.push(["a",t("regBeyond")]);
+  }
+  msgs.push(["w",L==="es"
+    ?"La unión del faldón al fondo inferior forma una rendija anular que acumula agua y es difícil de inspeccionar. Exigir soldadura continua en ambas caras, drenajes y venteos del faldón."
+    :"The skirt-to-bottom-head junction forms an annular crevice that accumulates water and is hard to inspect. Require continuous welding on both faces, plus skirt drains and vents."]);
+  if(c.caOver) msgs.push(["w",L==="es"
+    ?`La pérdida proyectada (${f1(c.loss,1)} mm) supera el sobreespesor admitido (${S.caMax} mm). En esta geometría la banda permanentemente mojada es un anillo estrecho y de posición fija: conviene revestir solo esa banda antes que engrosar toda la envolvente.`
+    :`The projected loss (${f1(c.loss,1)} mm) exceeds the allowed corrosion allowance (${S.caMax} mm). In this geometry the permanently wetted band is a narrow ring at a fixed position: lining only that band is preferable to thickening the whole shell.`]);
+  if(S.sand>0) msgs.push(["w",L==="es"
+    ?"Producción de sólidos declarada: el fondo del vertical es el colector natural de arena. Prever fondo cónico o sistema de lavado, y corrosión bajo depósito en la evaluación."
+    :"Sand production declared: the bottom of a vertical vessel is the natural sand collector. Provide a conical bottom or a flushing system, and include under-deposit corrosion in the evaluation."]);
+  if(S.insul&&S.tOp>LIM.cuiLo.v&&S.tOp<LIM.cuiHi.v) msgs.push(["w",L==="es"
+    ?"Equipo aislado dentro del rango de corrosión bajo aislamiento. En un vertical el agua escurre por toda la altura y se acumula en los anillos de soporte del aislamiento."
+    :"Insulated equipment within the corrosion-under-insulation range. In a vertical vessel water runs down the full height and collects at the insulation support rings."]);
+  if(!msgs.length) msgs.push(["k",L==="es"?"Sin alertas con las condiciones actuales.":"No alerts under the current conditions."]);
+
+  const diaRows=[
+    ["govGas",t("cGas"),c.vGas,c.Agas,c.Dgas],
+    ["govWO",t("cWO"),c.vWO,c.Awo,c.Dwo],
+    ["govOW",t("cOW"),c.vOW,c.Aow,c.Dow]];
+
+  const procRows=[
+    [t("pQgAct"),f1(c.qg*3600,0),"m³/h",""],
+    [t("pRhoG"),f1(c.rhoG,1),"kg/m³",""],
+    [t("pVt"),f1(c.vt,3),"m/s",L==="es"?`Gota de ${S.dmG} µm`:`${S.dmG} µm droplet`],
+    [t("pVsb"),f1(c.vSB,3),"m/s",`K = ${S.kSB} m/s`],
+    [t("pVgAdm"),f1(c.vGas,3),"m/s",c.vt<c.vSB?(L==="es"?"Gobierna la decantación de la gota":"Droplet settling governs"):(L==="es"?"Gobierna Souders-Brown":"Souders-Brown governs")],
+    [t("pVgReal"),f1(c.vgReal,3),"m/s",""],
+    [t("pVwo"),f1(c.vWO*1000,2),"mm/s",L==="es"?`Gota de ${S.dmW} µm en aceite de ${S.muO} cP`:`${S.dmW} µm droplet in ${S.muO} cP oil`],
+    [t("pVoUp"),f1(c.voUp*1000,3),"mm/s",c.voUp<c.vWO?(L==="es"?"Por debajo de la decantación":"Below the settling velocity"):(L==="es"?"Supera la decantación":"Exceeds the settling velocity")],
+    [t("pVow"),f1(c.vOW*1000,2),"mm/s",L==="es"?`Gota de ${S.dmO} µm en agua de ${S.muW} cP`:`${S.dmO} µm droplet in ${S.muW} cP water`],
+    [t("pVwDn"),f1(c.vwDn*1000,3),"mm/s",c.vwDn<c.vOW?(L==="es"?"Por debajo del ascenso":"Below the rise velocity"):(L==="es"?"Supera el ascenso":"Exceeds the rise velocity")],
+    [t("pD"),f1(c.D),"m",L==="es"?`Mínimo requerido ${f1(c.Dmin)} m`:`Minimum required ${f1(c.Dmin)} m`],
+    [t("pA"),f1(c.A),"m²",""],
+    [t("pH"),f1(c.H),"m",""],
+    [t("pHD"),f1(c.HD),"",`${S.ldMin} – ${S.ldMax}`],
+    [t("pVol"),f1(c.vol,1),"m³",""],
+    [t("pMass"),f1(c.mass/1000,1),"t",L==="es"?"Envolvente y fondos, sin faldón":"Shell and heads, skirt excluded"]];
+
+  const mechRows=[
+    [t("mRp"),f1(c.shellMat.Rp*derate(c.shellMat.ty,S.tDes),0),"MPa",`${c.shellMat.n} · ${S.tDes} °C`],
+    [t("mRm"),f1(c.shellMat.Rm,0),"MPa",c.shellMat.std],
+    [t("mF"),f1(c.f,1),"MPa","EN 13445-3 §6"],
+    [t("mE"),f1(c.eCalc,1),"mm",L==="es"?"Solo por presión interna":"Internal pressure only"],
+    [t("mCA"),f1(c.CA,1),"mm",L==="es"?`${f1(c.vcor,3)} mm/año × ${S.life} años`:`${f1(c.vcor,3)} mm/year × ${S.life} years`],
+    [t("mAdd"),f1(S.addT,1),"mm",""],
+    [t("mNom"),c.eNom.toFixed(0),"mm",L==="es"?"Falta la tensión longitudinal por peso, viento y sismo":"The longitudinal stress from weight, wind and seismic is still missing"],
+    [t("mHead"),c.eHead.toFixed(0),"mm",L==="es"?"Preliminar: faltan las verificaciones del nudo toriesférico":"Preliminary: the torispherical knuckle checks are still required"]];
+
+  return `
+<section><h2>${t("secDraw")}</h2><p class="note">${t("drawNote")}</p>
+ <div class="card"><div class="hd"><h3>${t("secDraw")}</h3><span class="sp"></span>
+   <span class="seg"><button id="v-fluid" aria-pressed="${VIEW==="fluid"}">${t("vFluid")}</button><button id="v-mat" aria-pressed="${VIEW==="mat"}">${t("vMat")}</button></span></div>
+  ${elevation(c,VIEW)}</div></section>
+
+<section><h2>${t("secDia")}</h2><p class="note">${t("diaNote")}</p>
+ <div class="two">
+  <div class="card">${diaBars(c)}</div>
+  <div class="card"><div class="scroll"><table><thead><tr><th>${t("crit")}</th><th class="n">${t("vel")}</th><th class="n">${t("area")}</th><th class="n">${t("reqD")}</th></tr></thead><tbody>
+   ${diaRows.map(([g,lab,v,A,D])=>`<tr class="${c.govD===g?"gov":""}"><td>${t(g)}</td>
+     <td class="n">${v<0.01?f1(v*1000,2)+" mm/s":f1(v,3)+" m/s"}</td><td class="n">${f1(A,3)} m²</td>
+     <td class="n"><strong>${f1(D)} m</strong></td></tr>`).join("")}</tbody></table></div>
+   <p class="note" style="margin:12px 0 0">${L==="es"
+     ?`El mayor de los tres manda. Entre el más exigente y el menos exigente hay un factor de <strong>${f1(ratio,1)}</strong>.`
+     :`The largest of the three governs. Between the most and the least demanding there is a factor of <strong>${f1(ratio,1)}</strong>.`}</p></div></div></section>
+
+<section><h2>${t("secHt")}</h2><p class="note">${t("htNote")}</p>
+ <div class="card">${heightBar(c)}</div></section>
+
+<section><h2>${t("regMap")}</h2><p class="note">${t("regMapNote")}</p>
+ <div class="two">
+  <div class="card"><div class="hd"><h3>${t("sReg")}</h3></div>
+   <div style="font-family:var(--mono);font-size:24px;font-weight:600;color:${c.sour?REGINK[c.SSC.r]:"var(--ink2)"}">${c.water?I18N[LANG].regLab[c.SSC.r]:t("sNoW")}</div>
+   <div class="mono" style="font-size:12px;color:var(--ink2);margin-top:4px">${f1(c.ph2sk,2)} kPa &#183; pH ${f1(S.ph,1)}</div>
+   <table style="margin-top:12px"><tbody>
+    <tr><td>${t("regRoute")}</td><td class="n"><strong>${REGREQ[c.SSC.r].route}</strong></td></tr>
+    <tr><td>${t("regHard")}</td><td class="n">${REGREQ[c.SSC.r].hrc?REGREQ[c.SSC.r].hrc+" HRC / "+REGREQ[c.SSC.r].hv+" HV":t("regNone")}</td></tr>
+    <tr><td>${t("regSmys")}</td><td class="n">${REGREQ[c.SSC.r].smys?REGREQ[c.SSC.r].smys+" MPa":"—"}</td></tr>
+   </tbody></table></div>
+  <div class="card">${regionMap(c,false)}
+   <div class="legend" style="margin-top:8px">
+    ${[0,1,2,3].map(n=>`<span><i class="sw" style="background:${REGFILL[n]};border:1px solid ${REGINK[n]}"></i>${I18N[LANG].regLab[n]}</span>`).join("")}</div>
+  </div></div></section>
+
+<section><h2>${t("secCorr")}</h2><p class="srcnote">${t("corrNote")}</p>
+ <ul class="msgs">${msgs.map(([k,m])=>`<li class="${k}">${m}</li>`).join("")}</ul>
+ <div style="margin-top:12px">${tbl([
+   [t("cBare"),f1(c.vBare,3),"mm/"+(L==="es"?"año":"year"),"de Waard-Milliams (1991)"],
+   [t("cRate"),f1(c.vcor,3),"mm/"+(L==="es"?"año":"year"),
+     S.vmode==="man"?(L==="es"?"Valor introducido":"Entered value")
+     :S.vmode==="mitig"?(L==="es"?`Disponibilidad ${S.avail} % sobre ${S.vInh} mm/año`:`${S.avail} % availability on ${S.vInh} mm/year`)
+     :(L==="es"?"Sin mitigación":"No mitigation")],
+   [t("cLoss"),f1(c.loss,1),"mm",`${S.life} ${L==="es"?"años":"years"}`],
+   [t("cVerdict"),c.caOver?"—":"✓","",c.caOver?t("cNoCA"):t("cOkCA")]])}</div></section>
+
+<section><h2>${t("secProc")}</h2>${tbl(procRows)}</section>
+<section><h2>${t("secMech")}</h2>${tbl(mechRows)}</section>
+
+<section><h2>${t("secMat")}</h2><p class="note">${t("matNote")}</p>
+ <div class="scroll"><table><thead><tr><th>${t("zone")}</th><th>${t("medium")}</th><th>${t("mech")}</th><th>${t("matSel")}</th><th>${t("basis")}</th></tr></thead><tbody>
+ ${Z.map(z=>`<tr><td><i class="sw" style="background:${MATCOL[z.cls]}"></i>${z.z}</td><td>${z.m}</td><td>${z.mech}</td>
+   <td><span class="tag ${z.tag==="k"?"":z.tag}">${z.mat}</span></td><td>${z.b}</td></tr>`).join("")}</tbody></table></div></section>
+
+<section><h2>${t("secLim")}</h2><p class="srcnote">${t("limNote")}</p>
+ <div class="scroll"><table><thead><tr><th>${t("param")}</th><th>${t("ptr")}</th><th class="n">${t("value")}</th></tr></thead><tbody>
+ ${Object.keys(LIM).map(k=>`<tr><td>${LIM[k].lab[L]}</td><td class="mono" style="font-size:11.5px;color:var(--ink2)">${LIM[k].ptr}</td>
+   <td class="n"><input type="number" step="any" data-lim="${k}" value="${LIM[k].v}" style="width:92px"></td></tr>`).join("")}</tbody></table></div></section>
+
+<section><h2>${t("secRep")}</h2>
+ <div class="hd"><button class="btn" id="genrep">${t("genRep")}</button><button class="btn" id="cprep">${t("copy")}</button></div>
+ <pre id="rep"></pre></section>
+
+<footer>${t("foot")}
+ <span class="au"><strong>Sergio Blanco, PhD</strong> — <a href="https://www.linkedin.com/in/sergio-blanco-professor/" target="_blank" rel="noopener">linkedin.com/in/sergio-blanco-professor</a></span></footer>`;
+}
+
+function refTab(c){
+  const L=LANG, i=L==="es"?0:1, reg=c.SSC.r, rr=REGREQ[reg];
+  return `
+<section style="margin-top:22px"><h2>${t("refTtl")}</h2><p class="note">${t("refNote")}</p>
+ <p class="srcnote">${t("refWarn")}</p></section>
+<section><h2>${t("regMap")}</h2><p class="note">${t("regMapNote")}</p>
+ <div class="two">
+  <div class="card"><div class="hd"><h3>${t("sReg")}</h3></div>
+   <div style="font-family:var(--mono);font-size:26px;font-weight:600;color:${REGINK[reg]}">${I18N[L].regLab[reg]}</div>
+   <div class="mono" style="font-size:12px;color:var(--ink2);margin-top:4px">${f1(c.ph2sk,2)} kPa &#183; pH ${f1(S.ph,1)}</div>
+   <table style="margin-top:14px"><tbody>
+    <tr><td>${t("regRoute")}</td><td class="n"><strong>${rr.route}</strong></td></tr>
+    <tr><td>${t("regHard")}</td><td class="n">${rr.hrc?rr.hrc+" HRC / "+rr.hv+" HV":t("regNone")}</td></tr>
+    <tr><td>${t("regSmys")}</td><td class="n">${rr.smys?rr.smys+" MPa":"—"}</td></tr>
+   </tbody></table></div>
+  <div class="card">${regionMap(c,true)}
+   <div class="legend" style="margin-top:8px">
+    ${[0,1,2,3].map(n=>`<span><i class="sw" style="background:${REGFILL[n]};border:1px solid ${REGINK[n]}"></i>${I18N[L].regLab[n]}</span>`).join("")}</div></div>
+ </div></section>
+${GLOSS.map(g=>`
+<section><h2>${t(g.k)}</h2>
+ <div class="scroll"><table><thead><tr><th style="width:26%">${t("term")}</th><th>${t("defn")}</th><th style="width:20%">${t("refs")}</th></tr></thead><tbody>
+ ${g.items.map(it=>`<tr><td><strong>${it.t[i]}</strong></td><td>${it.d[i]}</td>
+   <td class="mono" style="font-size:11.5px;color:var(--ink2)">${it.r}</td></tr>`).join("")}
+ </tbody></table></div></section>`).join("")}
+<section><h2>${t("stdTtl")}</h2>
+ <div class="scroll"><table><thead><tr><th style="width:17%">${t("std")}</th><th style="width:36%">${t("covers")}</th><th>${t("usedIn")}</th></tr></thead><tbody>
+ ${STDS.map(r=>`<tr><td class="mono" style="font-size:12px"><strong>${r[0]}</strong></td><td>${r[1][i]}</td><td>${r[2][i]}</td></tr>`).join("")}
+ </tbody></table></div></section>
+<footer>${t("foot")}
+ <span class="au"><strong>Sergio Blanco, PhD</strong> — <a href="https://www.linkedin.com/in/sergio-blanco-professor/" target="_blank" rel="noopener">linkedin.com/in/sergio-blanco-professor</a></span></footer>`;
+}
+
+function report(c){
+  const L=LANG, Z=screen(c), N=[];
+  const d=new Date().toISOString().slice(0,10);
+  N.push(L==="es"?"INFORME DE DIMENSIONAMIENTO Y SELECCIÓN DE MATERIALES":"SIZING AND MATERIALS SELECTION REPORT");
+  N.push((L==="es"?"Separador vertical trifásico · ":"Vertical three-phase separator · ")+d);
+  N.push("");
+  N.push(L==="es"?"1. CONDICIONES DE OPERACIÓN":"1. OPERATING CONDITIONS");
+  N.push(`   ${t("oil")}: ${S.qo} ${S.qoU==="m3d"?"m³/d":"bbl/d"}   ${t("water")}: ${S.qw} ${S.qwU==="m3d"?"m³/d":"bbl/d"}   ${t("gas")}: ${S.qg} ${S.qgU==="sm3d"?"Sm³/d":"MMscfd"}`);
+  N.push(`   P = ${S.pOp} bar a   T = ${S.tOp} °C   ${L==="es"?"Diseño":"Design"}: ${S.pDes} bar g / ${S.tDes} °C`);
+  N.push(`   CO₂ ${S.co2} %   H₂S ${S.h2s} %   Cl⁻ ${S.cl} mg/l   pH ${S.ph}`);
+  N.push("");
+  N.push(L==="es"?"2. CLASIFICACIÓN DEL SERVICIO":"2. SERVICE CLASSIFICATION");
+  N.push(`   pCO₂ = ${f1(c.pco2,3)} bar   pH₂S = ${f1(c.ph2sk,2)} kPa   pH in situ = ${f1(S.ph,1)}`);
+  N.push("   "+(c.sour?(L==="es"?`AMARGO — ${I18N.es.regLab[c.SSC.r]} de ISO 15156-2 Figura 1`:`SOUR — ISO 15156-2 Figure 1 ${I18N.en.regLab[c.SSC.r]}`)
+    :(L==="es"?"DULCE — por debajo de 0,3 kPa de pH₂S":"SWEET — below 0.3 kPa of pH₂S")));
+  if(c.sour){const RR=REGREQ[c.SSC.r];
+    N.push(`   ${L==="es"?"Ruta admitida":"Admitted route"}: ${RR.route}   ${L==="es"?"Dureza máx.":"Max hardness"}: ${RR.hrc} HRC / ${RR.hv} HV`);}
+  N.push("");
+  N.push(L==="es"?"3. DIÁMETRO — LOS TRES CRITERIOS":"3. DIAMETER — THE THREE CRITERIA");
+  N.push(`   ${t("cGas")}: ${f1(c.Dgas)} m`);
+  N.push(`   ${t("cWO")}: ${f1(c.Dwo)} m`);
+  N.push(`   ${t("cOW")}: ${f1(c.Dow)} m`);
+  N.push(`   ${L==="es"?"Gobierna":"Governed by"}: ${t(c.govD)}   ->  D = ${f1(c.D)} m`);
+  N.push("");
+  N.push(L==="es"?"4. ALTURA — PRESUPUESTO POR TRAMOS":"4. HEIGHT — BUDGET BY SEGMENT");
+  c.SEG.forEach(([k,v])=>N.push(`   ${t(k).padEnd(28," ")} ${f1(v).padStart(6," ")} m`));
+  N.push(`   ${(L==="es"?"TOTAL entre tangentes":"TOTAL tangent-to-tangent").padEnd(28," ")} ${f1(c.H).padStart(6," ")} m   H/D = ${f1(c.HD)}`);
+  N.push("");
+  N.push(L==="es"?"5. DISEÑO MECÁNICO":"5. MECHANICAL DESIGN");
+  N.push(`   ${c.shellMat.n} (${c.shellMat.std})   f = ${f1(c.f,1)} MPa`);
+  N.push(`   ${t("mNom")}: ${c.eNom.toFixed(0)} mm   ${t("mHead")}: ${c.eHead.toFixed(0)} mm`);
+  N.push("   "+(L==="es"?"Solo por presión interna. No incluye peso propio, viento ni sismo."
+                        :"Internal pressure only. Self-weight, wind and seismic are not included."));
+  N.push("");
+  N.push(L==="es"?"6. SELECCIÓN POR ZONA":"6. SELECTION BY ZONE");
+  Z.forEach(z=>{N.push(`   · ${z.z}: ${z.mat}`);N.push(`     ${z.b}`);});
+  N.push("");
+  N.push(L==="es"?"7. PENDIENTES":"7. OUTSTANDING ITEMS");
+  (L==="es"?["Acordar el modelo de velocidad de corrosión con el usuario final",
+    "Verificar los límites normativos contra la edición vigente",
+    "Análisis estructural del faldón con cargas de viento y sismo (NSR-10)",
+    "Completar las verificaciones del nudo toriesférico de los fondos",
+    "Calificar los materiales en servicio amargo y definir los ensayos exigidos",
+    "Definir el control de nivel e interfaz y la instrumentación",
+    "Declarar las incertidumbres y los ensayos de calificación pendientes"]
+   :["Agree the corrosion rate model with the end user",
+    "Verify the normative limits against the current edition",
+    "Structural analysis of the skirt with wind and seismic loads",
+    "Complete the torispherical knuckle checks for the heads",
+    "Qualify the materials in sour service and define the required testing",
+    "Define the level and interface control and the instrumentation",
+    "Declare the uncertainties and the pending qualification testing"]).forEach(x=>N.push("   - "+x));
+  N.push("");
+  N.push("Sergio Blanco, PhD — https://www.linkedin.com/in/sergio-blanco-professor/");
+  return N.join("\n");
+}
+
+/* ============================================================ wiring */
+const NUMK=["qo","qw","qg","pOp","tOp","pDes","tDes","rhoO","rhoW","mwG","zG","muO","muW","muG",
+  "co2","h2s","cl","ph","sand","dmG","dmW","dmO","kSB","tO","tW","h1","hf","hdMin","hm","htMin",
+  "ldMin","ldMax","zj","life","addT","caMax","vcor","vInh","avail"];
+const SELK=["qoU","qwU","qgU","head","vmode","env"];
+let TAB="sim";
+
+function render(){
+  document.getElementById("ttl").textContent=t("ttl");
+  document.getElementById("sub").textContent=t("sub");
+  document.getElementById("tab-sim").textContent=t("tabSim");
+  document.getElementById("tab-ref").textContent=t("tabRef");
+  document.getElementById("tab-sim").setAttribute("aria-pressed",String(TAB==="sim"));
+  document.getElementById("tab-ref").setAttribute("aria-pressed",String(TAB==="ref"));
+  const rl=document.getElementById("rail"), st=document.getElementById("strip"), c=compute();
+  if(TAB==="sim"){
+    document.getElementById("wrap").classList.remove("full");
+    rl.hidden=false; st.hidden=false;
+    rl.innerHTML=rail(); st.innerHTML=strip(c);
+    document.getElementById("out").innerHTML=out(c);
+    bind(c);
+    const rp=document.getElementById("rep");
+    if(rp&&!rp.textContent) rp.textContent=report(c);
+  }else{
+    document.getElementById("wrap").classList.add("full");
+    rl.hidden=true; st.hidden=true; rl.innerHTML="";
+    document.getElementById("out").innerHTML=refTab(c);
+  }
+}
+function bind(c){
+  NUMK.forEach(k=>{const el=document.getElementById(k); if(!el)return;
+    el.addEventListener("input",()=>{const v=parseFloat(el.value); if(isFinite(v)){S[k]=v;SCEN="C";soft();}});});
+  SELK.forEach(k=>{const el=document.getElementById(k); if(!el)return;
+    el.addEventListener("change",()=>{S[k]=el.value; if(k==="vmode")render(); else {SCEN="C";soft();}});});
+  const ins=document.getElementById("insul");
+  if(ins) ins.addEventListener("change",()=>{S.insul=ins.checked;SCEN="C";soft();});
+  document.querySelectorAll("[data-scen]").forEach(b=>b.addEventListener("click",()=>{
+    const k=b.dataset.scen; if(k!=="C"){S=Object.assign({},PRESETS[k]);SCEN=k;} else SCEN="C"; render();}));
+  document.querySelectorAll("[data-lim]").forEach(i=>i.addEventListener("input",()=>{
+    const v=parseFloat(i.value); if(isFinite(v)){LIM[i.dataset.lim].v=v;soft();}}));
+  const vf=document.getElementById("v-fluid"), vm=document.getElementById("v-mat");
+  if(vf) vf.addEventListener("click",()=>{VIEW="fluid";soft();});
+  if(vm) vm.addEventListener("click",()=>{VIEW="mat";soft();});
+  const g=document.getElementById("genrep");
+  if(g) g.addEventListener("click",()=>{document.getElementById("rep").textContent=report(compute());});
+  const cp=document.getElementById("cprep");
+  if(cp) cp.addEventListener("click",async()=>{
+    const el=document.getElementById("rep"); if(!el.textContent) el.textContent=report(compute());
+    try{await navigator.clipboard.writeText(el.textContent); cp.textContent=t("copied");
+      setTimeout(()=>cp.textContent=t("copy"),1600);}catch(e){
+      const r=document.createRange(); r.selectNodeContents(el);
+      const s=window.getSelection(); s.removeAllRanges(); s.addRange(r);}});
+}
+function soft(){
+  if(TAB!=="sim")return;
+  const c=compute();
+  document.getElementById("strip").innerHTML=strip(c);
+  const rp=document.getElementById("rep"), keep=rp?rp.textContent:"";
+  document.getElementById("out").innerHTML=out(c);
+  const rp2=document.getElementById("rep");
+  if(rp2) rp2.textContent=keep||report(c);
+  document.querySelectorAll("[data-scen]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.scen===SCEN)));
+  bind(c);
+}
+document.getElementById("tab-sim").addEventListener("click",()=>{TAB="sim";render();});
+document.getElementById("tab-ref").addEventListener("click",()=>{TAB="ref";render();window.scrollTo(0,0);});
+document.getElementById("lang-es").addEventListener("click",()=>{LANG="es";
+  document.getElementById("lang-es").setAttribute("aria-pressed","true");
+  document.getElementById("lang-en").setAttribute("aria-pressed","false");render();});
+document.getElementById("lang-en").addEventListener("click",()=>{LANG="en";
+  document.getElementById("lang-en").setAttribute("aria-pressed","true");
+  document.getElementById("lang-es").setAttribute("aria-pressed","false");render();});
+render();
+</script>
